@@ -157,7 +157,7 @@ public class ForgotPasswordFrame extends JFrame {
 
         rightPanel.add(lblStudentId);
 
-        txtStudentId = new RoundedTextField();
+        txtStudentId = new RoundedTextField("Enter your Student ID");
 
         txtStudentId.setBounds(150, 150, 320, 38);
 
@@ -174,7 +174,7 @@ public class ForgotPasswordFrame extends JFrame {
 
         rightPanel.add(lblEmail);
 
-        txtEmail = new RoundedTextField();
+        txtEmail = new RoundedTextField("Enter your email");
 
         txtEmail.setBounds(150, 235, 320, 38);
 
@@ -188,6 +188,16 @@ public class ForgotPasswordFrame extends JFrame {
         btnVerify.setBounds(235, 295, 150, 42);
 
         rightPanel.add(btnVerify);
+        btnVerify.addActionListener(e -> {
+
+    JOptionPane.showMessageDialog(
+        this,
+        "Verification successful!",
+        "Verification",
+        JOptionPane.INFORMATION_MESSAGE
+    );
+
+});
     }
 
     private void addNewPassword() {
@@ -200,7 +210,7 @@ public class ForgotPasswordFrame extends JFrame {
 
         rightPanel.add(lblNewPassword);
 
-        txtNewPassword = new RoundedPasswordField();
+        txtNewPassword = new RoundedPasswordField("Enter new password");
 
         txtNewPassword.setBounds(150, 395, 320, 38);
 
@@ -217,7 +227,7 @@ public class ForgotPasswordFrame extends JFrame {
 
         rightPanel.add(lblConfirmPassword);
 
-        txtConfirmPassword = new RoundedPasswordField();
+        txtConfirmPassword = new RoundedPasswordField("Confirm your new password");
 
         txtConfirmPassword.setBounds(150, 470, 320, 38);
 
@@ -231,6 +241,16 @@ public class ForgotPasswordFrame extends JFrame {
         btnReset.setBounds(235, 525, 150, 42);
 
         rightPanel.add(btnReset);
+        btnReset.addActionListener(e -> {
+
+    JOptionPane.showMessageDialog(
+        this,
+        "Password reset successful!",
+        "Success",
+        JOptionPane.INFORMATION_MESSAGE
+    );
+
+});
     }
 
     private void addBackToLogin() {

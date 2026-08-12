@@ -86,7 +86,7 @@ public class SplashFrame extends JFrame {
 
                     progressBar.setValue(i);
 
-                    Thread.sleep(30);
+                    Thread.sleep(10);
 
                 }
 

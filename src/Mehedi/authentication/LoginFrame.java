@@ -191,7 +191,7 @@ public class LoginFrame extends JFrame {
 
         rightPanel.add(lblUsername);
 
-        txtUsername = new RoundedTextField();
+        txtUsername = new RoundedTextField("Enter your username");
 
         txtUsername.setBounds(150,180,320,40);
 
@@ -211,7 +211,7 @@ public class LoginFrame extends JFrame {
 
         rightPanel.add(lblPassword);
 
-        txtPassword = new RoundedPasswordField();
+        txtPassword = new RoundedPasswordField("Enter your password");
 
         txtPassword.setBounds(150,280,320,40);
 
@@ -268,6 +268,16 @@ public class LoginFrame extends JFrame {
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         rightPanel.add(btnLogin);
+        btnLogin.addActionListener(e -> {
+
+    JOptionPane.showMessageDialog(
+        this,
+        "Login button clicked!",
+        "Login",
+        JOptionPane.INFORMATION_MESSAGE
+    );
+
+});
         
         btnLogin.addMouseListener(new java.awt.event.MouseAdapter() {
 

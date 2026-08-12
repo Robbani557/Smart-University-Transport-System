@@ -170,7 +170,7 @@ public class RegisterFrame extends JFrame {
 
         rightPanel.add(lblStudentId);
 
-        txtStudentId = new RoundedTextField();
+        txtStudentId = new RoundedTextField("Enter your Student ID");
 
         txtStudentId.setBounds(70, 110, 230, 38);
 
@@ -187,7 +187,7 @@ public class RegisterFrame extends JFrame {
 
         rightPanel.add(lblName);
 
-        txtName = new RoundedTextField();
+        txtName = new RoundedTextField("Enter your full name");
 
         txtName.setBounds(330, 110, 230, 38);
 
@@ -204,7 +204,7 @@ public class RegisterFrame extends JFrame {
 
         rightPanel.add(lblEmail);
 
-        txtEmail = new RoundedTextField();
+        txtEmail = new RoundedTextField("Enter your email");
 
         txtEmail.setBounds(70, 190, 230, 38);
 
@@ -221,7 +221,7 @@ public class RegisterFrame extends JFrame {
 
         rightPanel.add(lblPhone);
 
-        txtPhone = new RoundedTextField();
+        txtPhone = new RoundedTextField("Enter your phone number");
 
         txtPhone.setBounds(330, 190, 230, 38);
 
@@ -238,7 +238,7 @@ public class RegisterFrame extends JFrame {
 
         rightPanel.add(lblDepartment);
 
-        txtDepartment = new RoundedTextField();
+        txtDepartment = new RoundedTextField("Enter your department");
 
         txtDepartment.setBounds(70, 270, 230, 38);
 
@@ -255,7 +255,7 @@ public class RegisterFrame extends JFrame {
 
         rightPanel.add(lblBatch);
 
-        txtBatch = new RoundedTextField();
+        txtBatch = new RoundedTextField("Enter your batch");
 
         txtBatch.setBounds(330, 270, 230, 38);
 
@@ -272,7 +272,7 @@ public class RegisterFrame extends JFrame {
 
         rightPanel.add(lblPassword);
 
-        txtPassword = new RoundedPasswordField();
+        txtPassword = new RoundedPasswordField("Enter your password");
 
         txtPassword.setBounds(70, 375, 230, 38);
 
@@ -289,7 +289,7 @@ public class RegisterFrame extends JFrame {
 
         rightPanel.add(lblConfirmPassword);
 
-        txtConfirmPassword = new RoundedPasswordField();
+        txtConfirmPassword = new RoundedPasswordField("Confirm your password");
 
         txtConfirmPassword.setBounds(330, 375, 230, 38);
 
@@ -303,6 +303,13 @@ public class RegisterFrame extends JFrame {
         btnRegister.setBounds(215, 455, 220, 45);
 
         rightPanel.add(btnRegister);
+        btnRegister.addActionListener(e -> {
+
+        new ProfileSetupFrame().setVisible(true);
+
+        dispose();
+
+});
     }
 
     private void addLoginLink() {

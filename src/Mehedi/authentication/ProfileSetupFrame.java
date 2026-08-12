@@ -161,7 +161,7 @@ public class ProfileSetupFrame extends JFrame {
 
         rightPanel.add(lblStudentId);
 
-        txtStudentId = new RoundedTextField();
+        txtStudentId = new RoundedTextField("Enter your Student ID");
 
         txtStudentId.setBounds(70, 110, 230, 38);
 
@@ -178,7 +178,7 @@ public class ProfileSetupFrame extends JFrame {
 
         rightPanel.add(lblName);
 
-        txtName = new RoundedTextField();
+        txtName = new RoundedTextField("Enter your full name");
 
         txtName.setBounds(330, 110, 230, 38);
 
@@ -195,7 +195,7 @@ public class ProfileSetupFrame extends JFrame {
 
         rightPanel.add(lblDepartment);
 
-        txtDepartment = new RoundedTextField();
+        txtDepartment = new RoundedTextField("Enter your department");
 
         txtDepartment.setBounds(70, 190, 230, 38);
 
@@ -212,7 +212,7 @@ public class ProfileSetupFrame extends JFrame {
 
         rightPanel.add(lblPhone);
 
-        txtPhone = new RoundedTextField();
+        txtPhone = new RoundedTextField("Enter your phone number");
 
         txtPhone.setBounds(330, 190, 230, 38);
 
@@ -229,7 +229,7 @@ public class ProfileSetupFrame extends JFrame {
 
         rightPanel.add(lblEmergency);
 
-        txtEmergency = new RoundedTextField();
+        txtEmergency = new RoundedTextField("Emergency contact number");
 
         txtEmergency.setBounds(70, 270, 230, 38);
 
@@ -303,6 +303,16 @@ public class ProfileSetupFrame extends JFrame {
         btnSave.setBounds(330, 375, 230, 45);
 
         rightPanel.add(btnSave);
+        btnSave.addActionListener(e -> {
+
+    JOptionPane.showMessageDialog(
+        this,
+        "Profile saved successfully!",
+        "Success",
+        JOptionPane.INFORMATION_MESSAGE
+    );
+
+});
     }
 
     public static void main(String[] args) {
