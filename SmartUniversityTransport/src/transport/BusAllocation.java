@@ -1,6 +1,6 @@
 package transport;
 
-import controller.AllocationController;
+import controller.AllocationUIController;
 import model.Bus;
 import model.BusAllocationResult;
 
@@ -19,11 +19,11 @@ public class BusAllocation extends JFrame {
 
     private JTextArea resultArea;
 
-    private AllocationController controller;
+   private AllocationUIController controller;
 
     public BusAllocation() {
 
-        controller = new AllocationController();
+       controller = new AllocationUIController();
 
         setTitle("Bus Allocation");
 
@@ -109,7 +109,12 @@ public class BusAllocation extends JFrame {
 
         JPanel informationPanel =
                 new JPanel(
-                        new GridLayout(1, 4, 10, 10)
+                        new GridLayout(
+                                1,
+                                4,
+                                10,
+                                10
+                        )
                 );
 
         studentsLabel =
@@ -157,7 +162,12 @@ public class BusAllocation extends JFrame {
                 new JScrollPane(resultArea);
 
         JPanel centerPanel =
-                new JPanel(new BorderLayout(10, 10));
+                new JPanel(
+                        new BorderLayout(
+                                10,
+                                10
+                        )
+                );
 
         centerPanel.setBorder(
                 BorderFactory.createEmptyBorder(
@@ -192,13 +202,12 @@ public class BusAllocation extends JFrame {
         String time =
                 (String) timeBox.getSelectedItem();
 
-        controller.resetAllocation();
-
-        BusAllocationResult result =
-                controller.allocateBus(
-                        route,
-                        time
-                );
+       //controller.reset();
+       BusAllocationResult result =
+        controller.allocate(
+                route,
+                time
+        );
 
         studentsLabel.setText(
                 "Students: "
@@ -286,7 +295,7 @@ public class BusAllocation extends JFrame {
 
     private void reset() {
 
-        controller.resetAllocation();
+        controller.reset();
 
         studentsLabel.setText(
                 "Students: 0"

@@ -1,6 +1,6 @@
 package transport.ui;
 
-import  controller.AllocationController;
+import model.AllocationController;
 import model.Bus;
 import model.BusAllocationResult;
 
@@ -23,11 +23,11 @@ public class BusAllocationPanel extends JPanel {
 
     private AllocationController controller;
 
-    public BusAllocationPanel() {
+    public BusAllocationPanel(AllocationController controller) {
 
-        controller = new AllocationController();
+    this.controller = controller;
 
-        setLayout(new BorderLayout(15, 15));
+    setLayout(new BorderLayout(15, 15));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         createTopPanel();
@@ -235,9 +235,11 @@ public class BusAllocationPanel extends JPanel {
 
             frame.setLocationRelativeTo(null);
 
-            frame.add(
-                    new BusAllocationPanel()
-            );
+           frame.add(
+        new BusAllocationPanel(
+                new AllocationController()
+        )
+);
 
             frame.setVisible(true);
         });

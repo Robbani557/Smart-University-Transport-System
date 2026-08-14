@@ -2,11 +2,11 @@ package data;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import model.Bus;
 import model.Booking;
 import model.Route;
 import model.Student;
-
 import service.BookingManager;
 import service.BusAllocationManager;
 

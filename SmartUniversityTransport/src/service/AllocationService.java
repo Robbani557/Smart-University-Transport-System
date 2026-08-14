@@ -1,11 +1,11 @@
 package service;
 
-import model.Bus;
+import java.util.List;
+import data.TransportData;
 import model.BusAllocationResult;
 import model.Route;
-import data.TransportData;
+import model.Bus;
 
-import java.util.List;
 public class AllocationService {
 
     private TransportData transportData;

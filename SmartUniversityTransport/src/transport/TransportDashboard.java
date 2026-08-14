@@ -1,15 +1,35 @@
 package transport;
 
+import data.TransportData;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
+
+import model.BusAllocationResult;
+import controller.AllocationUIController;
+
+import transport.ui.TimePanel;
+import transport.ui.BusDetailsPanel;
 
 public class TransportDashboard extends JFrame {
 
     private final Color BLUE = new Color(30, 105, 190);
-    private final Color LIGHT_BLUE = new Color(235, 242, 250);
+
+    private DefaultTableModel routeTableModel;
+    private JPanel activityList;
+
+    private TransportData transportData;
+
+    private JLabel totalBusesLabel;
+    private JLabel totalRoutesLabel;
+    private JLabel totalBookingsLabel;
+    private JLabel activeDriversLabel;
 
     public TransportDashboard() {
+
+        transportData = new TransportData();
 
         setTitle("Smart University Transport System");
         setSize(1360, 760);
@@ -17,6 +37,19 @@ public class TransportDashboard extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         createUI();
+
+        addWindowFocusListener(new WindowFocusListener() {
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                refreshDashboard();
+            }
+
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                // Nothing needed
+            }
+        });
     }
 
     private void createUI() {
@@ -24,45 +57,50 @@ public class TransportDashboard extends JFrame {
         setLayout(new BorderLayout());
 
        
-
         JPanel header = new JPanel(new BorderLayout());
+
         header.setBackground(Color.WHITE);
+
         header.setBorder(
                 BorderFactory.createEmptyBorder(
                         20, 25, 20, 25
                 )
         );
 
-        JLabel title = new JLabel("Transport Dashboard");
+        JLabel title
+                = new JLabel("Transport Dashboard");
 
         title.setFont(
-                new Font("Arial", Font.BOLD, 25)
-        );
-
-        JLabel manager = new JLabel("Transport Manager");
-
-        manager.setFont(
-                new Font("Arial", Font.BOLD, 14)
-        );
-
-        JPanel rightHeader = new JPanel(
-                new FlowLayout(
-                        FlowLayout.RIGHT,
-                        25,
-                        0
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        25
                 )
         );
 
-        rightHeader.setOpaque(false);
+        JLabel manager
+                = new JLabel("Transport Manager");
 
-        JLabel notification =
-                new JLabel("Notifications");
-
-        notification.setFont(
-                new Font("Arial", Font.PLAIN, 14)
+        manager.setFont(
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        14
+                )
         );
 
-        rightHeader.add(notification);
+        JPanel rightHeader
+                = new JPanel(
+                        new FlowLayout(
+                                FlowLayout.RIGHT,
+                                25,
+                                0
+                        )
+                );
+
+        rightHeader.setOpaque(false);
+
+
         rightHeader.add(manager);
 
         header.add(
@@ -80,7 +118,7 @@ public class TransportDashboard extends JFrame {
                 BorderLayout.NORTH
         );
 
-        
+       
         JPanel sidebar = new JPanel();
 
         sidebar.setPreferredSize(
@@ -96,8 +134,8 @@ public class TransportDashboard extends JFrame {
                 )
         );
 
-        JLabel busTitle =
-                new JLabel("BUS");
+        JLabel busTitle
+                = new JLabel("BUS");
 
         busTitle.setForeground(Color.WHITE);
 
@@ -113,8 +151,8 @@ public class TransportDashboard extends JFrame {
                 Component.CENTER_ALIGNMENT
         );
 
-        JLabel smartTransport =
-                new JLabel("Smart Transport");
+        JLabel smartTransport
+                = new JLabel("Smart Transport");
 
         smartTransport.setForeground(Color.WHITE);
 
@@ -130,49 +168,66 @@ public class TransportDashboard extends JFrame {
                 Component.CENTER_ALIGNMENT
         );
 
-        sidebar.add(Box.createVerticalStrut(35));
+        sidebar.add(
+                Box.createVerticalStrut(35)
+        );
+
         sidebar.add(busTitle);
-        sidebar.add(Box.createVerticalStrut(10));
+
+        sidebar.add(
+                Box.createVerticalStrut(10)
+        );
+
         sidebar.add(smartTransport);
-        sidebar.add(Box.createVerticalStrut(55));
 
-        JButton dashboardButton =
-                createSidebarButton("Dashboard");
+        sidebar.add(
+                Box.createVerticalStrut(55)
+        );
 
-        JButton allocationButton =
-                createSidebarButton("Bus Allocation");
+        JButton dashboardButton
+                = createSidebarButton("Dashboard");
 
-        JButton studentsButton =
-                createSidebarButton("Students");
+        JButton allocationButton
+                = createSidebarButton("Bus Allocation");
 
-        JButton routesButton =
-                createSidebarButton("Routes");
+        JButton timeButton
+                = createSidebarButton("Schedule");
 
-        JButton bookingsButton =
-                createSidebarButton("Bookings");
+        JButton busDetailsButton
+                = createSidebarButton("Bus Details");
 
-        JButton reportsButton =
-                createSidebarButton("Reports");
+        
+        JButton routesButton
+                = createSidebarButton("Routes");
 
-        JButton settingsButton =
-                createSidebarButton("Settings");
+       
+        JButton reportsButton
+                = createSidebarButton("Reports");
 
-        JButton logoutButton =
-                createSidebarButton("Logout");
+        
+
+        JButton logoutButton
+                = createSidebarButton("Logout");
 
         sidebar.add(dashboardButton);
         sidebar.add(allocationButton);
-        sidebar.add(studentsButton);
+        sidebar.add(timeButton);
+        sidebar.add(busDetailsButton);
+       
         sidebar.add(routesButton);
-        sidebar.add(bookingsButton);
+       
         sidebar.add(reportsButton);
-        sidebar.add(settingsButton);
+       
 
-        sidebar.add(Box.createVerticalGlue());
+        sidebar.add(
+                Box.createVerticalGlue()
+        );
 
         sidebar.add(logoutButton);
 
-        sidebar.add(Box.createVerticalStrut(25));
+        sidebar.add(
+                Box.createVerticalStrut(25)
+        );
 
         add(
                 sidebar,
@@ -180,9 +235,8 @@ public class TransportDashboard extends JFrame {
         );
 
         
-
-        JPanel mainPanel =
-                new JPanel(
+        JPanel mainPanel
+                = new JPanel(
                         new BorderLayout(
                                 20,
                                 20
@@ -202,9 +256,9 @@ public class TransportDashboard extends JFrame {
                 )
         );
 
-       
-        JPanel cardsPanel =
-                new JPanel(
+        
+        JPanel cardsPanel
+                = new JPanel(
                         new GridLayout(
                                 1,
                                 4,
@@ -217,28 +271,36 @@ public class TransportDashboard extends JFrame {
 
         cardsPanel.add(
                 createCard(
-                        "26",
+                        String.valueOf(
+                                transportData.getBuses().size()
+                        ),
                         "Total Buses"
                 )
         );
 
         cardsPanel.add(
                 createCard(
-                        "8",
+                        String.valueOf(
+                                transportData.getRoutes().size()
+                        ),
                         "Total Routes"
                 )
         );
 
         cardsPanel.add(
                 createCard(
-                        "421",
+                        String.valueOf(
+                                transportData.getBookings().size()
+                        ),
                         "Today's Bookings"
                 )
         );
 
         cardsPanel.add(
                 createCard(
-                        "24",
+                        String.valueOf(
+                                transportData.getBuses().size()
+                        ),
                         "Active Drivers"
                 )
         );
@@ -248,10 +310,9 @@ public class TransportDashboard extends JFrame {
                 BorderLayout.NORTH
         );
 
-      
-
-        JPanel centerPanel =
-                new JPanel(
+       
+        JPanel centerPanel
+                = new JPanel(
                         new BorderLayout(
                                 20,
                                 0
@@ -261,9 +322,8 @@ public class TransportDashboard extends JFrame {
         centerPanel.setOpaque(false);
 
         
-
-        JPanel routePanel =
-                new JPanel(
+        JPanel routePanel
+                = new JPanel(
                         new BorderLayout()
                 );
 
@@ -275,8 +335,8 @@ public class TransportDashboard extends JFrame {
                 )
         );
 
-        JLabel routeTitle =
-                new JLabel(
+        JLabel routeTitle
+                = new JLabel(
                         "Today's Route Summary"
                 );
 
@@ -310,30 +370,23 @@ public class TransportDashboard extends JFrame {
             "Status"
         };
 
-        Object[][] data = {
-            {"Mirpur", 245, 5, 4, "Need 1 Bus"},
-            {"Dhanmondi", 331, 7, 7, "Perfect"},
-            {"Uttara", 148, 3, 3, "Perfect"},
-            {"Mohammadpur", 87, 2, 2, "Perfect"},
-            {"Badda", 193, 4, 3, "Need 1 Bus"}
-        };
-
-        DefaultTableModel model =
-                new DefaultTableModel(
-                        data,
+        routeTableModel
+                = new DefaultTableModel(
+                        new Object[][]{},
                         columns
                 ) {
-                    @Override
-                    public boolean isCellEditable(
-                            int row,
-                            int column
-                    ) {
-                        return false;
-                    }
-                };
 
-        JTable table =
-                new JTable(model);
+            @Override
+            public boolean isCellEditable(
+                    int row,
+                    int column
+            ) {
+                return false;
+            }
+        };
+
+        JTable table
+                = new JTable(routeTableModel);
 
         table.setRowHeight(38);
 
@@ -353,15 +406,17 @@ public class TransportDashboard extends JFrame {
                 )
         );
 
-        table.getTableHeader().setBackground(BLUE);
+        table.getTableHeader()
+                .setBackground(BLUE);
 
-        table.getTableHeader().setForeground(
-                Color.WHITE
-        );
+        table.getTableHeader()
+                .setForeground(Color.WHITE);
 
         table.setGridColor(
                 new Color(220, 220, 220)
         );
+
+        table.setAutoCreateRowSorter(true);
 
         routePanel.add(
                 new JScrollPane(table),
@@ -373,10 +428,9 @@ public class TransportDashboard extends JFrame {
                 BorderLayout.CENTER
         );
 
-      
-
-        JPanel activityPanel =
-                new JPanel(
+       
+        JPanel activityPanel
+                = new JPanel(
                         new BorderLayout()
                 );
 
@@ -392,8 +446,8 @@ public class TransportDashboard extends JFrame {
                 )
         );
 
-        JLabel activityTitle =
-                new JLabel(
+        JLabel activityTitle
+                = new JLabel(
                         "Recent Activity"
                 );
 
@@ -419,41 +473,18 @@ public class TransportDashboard extends JFrame {
                 BorderLayout.NORTH
         );
 
-        JPanel activityList =
-                new JPanel();
+        activityList
+                = new JPanel();
 
-        activityList.setBackground(Color.WHITE);
+        activityList.setBackground(
+                Color.WHITE
+        );
 
         activityList.setLayout(
                 new BoxLayout(
                         activityList,
                         BoxLayout.Y_AXIS
                 )
-        );
-
-        addActivity(
-                activityList,
-                "Bus 12 assigned to Mirpur"
-        );
-
-        addActivity(
-                activityList,
-                "Dhanmondi allocation completed"
-        );
-
-        addActivity(
-                activityList,
-                "Bus 7 returned to campus"
-        );
-
-        addActivity(
-                activityList,
-                "Uttara schedule updated"
-        );
-
-        addActivity(
-                activityList,
-                "Driver assigned to Bus 18"
         );
 
         activityPanel.add(
@@ -476,18 +507,16 @@ public class TransportDashboard extends JFrame {
                 BorderLayout.CENTER
         );
 
-       
+      
         dashboardButton.addActionListener(
-                e -> {
-                    // Already on dashboard
-                }
+                e -> refreshDashboard()
         );
 
         allocationButton.addActionListener(
                 e -> {
 
-                    BusAllocation allocation =
-                            new BusAllocation();
+                    BusAllocation allocation
+                    = new BusAllocation();
 
                     allocation.setLocationRelativeTo(
                             this
@@ -496,77 +525,218 @@ public class TransportDashboard extends JFrame {
                     allocation.setVisible(true);
                 }
         );
+        timeButton.addActionListener(
+        e -> new TimePanel(transportData).setVisible(true)
+);
 
-        studentsButton.addActionListener(
-                e -> {
+       busDetailsButton.addActionListener(
+        e -> new BusDetailsPanel(transportData).setVisible(true)
+);
 
-                    transport.ui.StudentPanel panel =
-                            new transport.ui.StudentPanel();
-
-                    panel.setVisible(true);
-                }
-        );
+       
 
         routesButton.addActionListener(
                 e -> {
 
-                    transport.ui.RoutePanel panel =
-                            new transport.ui.RoutePanel();
+                    transport.ui.RoutePanel panel
+                    = new transport.ui.RoutePanel();
 
                     panel.setVisible(true);
                 }
         );
 
-        bookingsButton.addActionListener(
-                e -> {
-
-                    transport.ui.BookingPanel panel =
-                            new transport.ui.BookingPanel();
-
-                    panel.setVisible(true);
-                }
-        );
+        
 
         reportsButton.addActionListener(
-                e -> JOptionPane.showMessageDialog(
-                        this,
-                        "Reports module coming soon."
-                )
+                e -> showAllocationReport()
         );
 
-        settingsButton.addActionListener(
-                e -> JOptionPane.showMessageDialog(
-                        this,
-                        "Settings module coming soon."
-                )
-        );
-
+        
         logoutButton.addActionListener(
                 e -> {
 
-                    int choice =
-                            JOptionPane.showConfirmDialog(
-                                    this,
-                                    "Are you sure you want to exit?",
-                                    "Logout",
-                                    JOptionPane.YES_NO_OPTION
-                            );
+                    int choice
+                    = JOptionPane.showConfirmDialog(
+                            this,
+                            "Are you sure you want to Logout?",
+                            "Logout",
+                            JOptionPane.YES_NO_OPTION
+                    );
 
-                    if (choice ==
-                            JOptionPane.YES_OPTION) {
+                    if (choice
+                    == JOptionPane.YES_OPTION) {
 
                         dispose();
                     }
                 }
         );
+
+        refreshDashboard();
     }
 
+   
+    private void refreshDashboard() {
+
+        refreshCards();
+
+        refreshRouteSummary();
+
+        refreshRecentActivity();
+    }
+
+    private void refreshCards() {
+
+        totalBusesLabel.setText(
+                String.valueOf(
+                        transportData.getBuses().size()
+                )
+        );
+
+        totalRoutesLabel.setText(
+                String.valueOf(
+                        transportData.getRoutes().size()
+                )
+        );
+
+        totalBookingsLabel.setText(
+                String.valueOf(
+                        transportData.getBookings().size()
+                )
+        );
+
+        activeDriversLabel.setText(
+                String.valueOf(
+                        transportData.getBuses().size()
+                )
+        );
+    }
+
+    
+    private void refreshRouteSummary() {
+
+        routeTableModel.setRowCount(0);
+
+        AllocationUIController controller
+                = new AllocationUIController();
+
+        for (BusAllocationResult result
+                : controller.getSummary().getResults()) {
+
+            routeTableModel.addRow(
+                    new Object[]{
+                        result.getRouteName(),
+                        result.getStudentCount(),
+                        result.getBusesRequired(),
+                        result.getBusesAllocated(),
+                        result.getStatus()
+                    }
+            );
+        }
+    }
+
+   
+    private void refreshRecentActivity() {
+
+        activityList.removeAll();
+
+        AllocationUIController controller
+                = new AllocationUIController();
+
+        if (controller.getSummary()
+                .getResults()
+                .isEmpty()) {
+
+            addActivity(
+                    activityList,
+                    "No bus allocation activity yet"
+            );
+
+        } else {
+
+            for (BusAllocationResult result
+                    : controller.getSummary().getResults()) {
+
+                String activity
+                        = result.getRouteName()
+                        + " allocation: "
+                        + result.getBusesAllocated()
+                        + "/"
+                        + result.getBusesRequired()
+                        + " buses allocated";
+
+                addActivity(
+                        activityList,
+                        activity
+                );
+            }
+        }
+
+        activityList.revalidate();
+        activityList.repaint();
+    }
+
+  
+    private void showAllocationReport() {
+
+        AllocationUIController controller
+                = new AllocationUIController();
+
+        if (controller.getSummary()
+                .getResults()
+                .isEmpty()) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No bus allocation has been completed yet.\n"
+                    + "Please allocate buses first.",
+                    "Reports",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            return;
+        }
+
+        String report
+                = controller.generateReport();
+
+        JTextArea reportArea
+                = new JTextArea(report);
+
+        reportArea.setEditable(false);
+
+        reportArea.setFont(
+                new Font(
+                        "Monospaced",
+                        Font.PLAIN,
+                        14
+                )
+        );
+
+        JScrollPane scrollPane
+                = new JScrollPane(reportArea);
+
+        scrollPane.setPreferredSize(
+                new Dimension(
+                        750,
+                        500
+                )
+        );
+
+        JOptionPane.showMessageDialog(
+                this,
+                scrollPane,
+                "Bus Allocation Report",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+   
     private JButton createSidebarButton(
             String text
     ) {
 
-        JButton button =
-                new JButton(text);
+        JButton button
+                = new JButton(text);
 
         button.setAlignmentX(
                 Component.CENTER_ALIGNMENT
@@ -586,9 +756,7 @@ public class TransportDashboard extends JFrame {
                 )
         );
 
-        button.setForeground(
-                Color.WHITE
-        );
+        button.setForeground(Color.WHITE);
 
         button.setBackground(BLUE);
 
@@ -620,13 +788,13 @@ public class TransportDashboard extends JFrame {
         return button;
     }
 
+   
     private JPanel createCard(
             String number,
-            String label
-    ) {
+            String label) {
 
-        JPanel card =
-                new JPanel(
+        JPanel card
+                = new JPanel(
                         new BorderLayout()
                 );
 
@@ -638,8 +806,8 @@ public class TransportDashboard extends JFrame {
                 )
         );
 
-        JLabel numberLabel =
-                new JLabel(number);
+        JLabel numberLabel
+                = new JLabel(number);
 
         numberLabel.setForeground(BLUE);
 
@@ -660,8 +828,8 @@ public class TransportDashboard extends JFrame {
                 )
         );
 
-        JLabel labelText =
-                new JLabel(label);
+        JLabel labelText
+                = new JLabel(label);
 
         labelText.setFont(
                 new Font(
@@ -680,6 +848,22 @@ public class TransportDashboard extends JFrame {
                 )
         );
 
+        if (label.equals("Total Buses")) {
+            totalBusesLabel = numberLabel;
+        }
+
+        if (label.equals("Total Routes")) {
+            totalRoutesLabel = numberLabel;
+        }
+
+        if (label.equals("Today's Bookings")) {
+            totalBookingsLabel = numberLabel;
+        }
+
+        if (label.equals("Active Drivers")) {
+            activeDriversLabel = numberLabel;
+        }
+
         card.add(
                 numberLabel,
                 BorderLayout.CENTER
@@ -693,13 +877,14 @@ public class TransportDashboard extends JFrame {
         return card;
     }
 
+  
     private void addActivity(
             JPanel panel,
             String text
     ) {
 
-        JLabel activity =
-                new JLabel(
+        JLabel activity
+                = new JLabel(
                         "• " + text
                 );
 
@@ -723,12 +908,13 @@ public class TransportDashboard extends JFrame {
         panel.add(activity);
     }
 
+    
     public static void main(String[] args) {
 
         SwingUtilities.invokeLater(() -> {
 
-            TransportDashboard dashboard =
-                    new TransportDashboard();
+            TransportDashboard dashboard
+                    = new TransportDashboard();
 
             dashboard.setVisible(true);
         });

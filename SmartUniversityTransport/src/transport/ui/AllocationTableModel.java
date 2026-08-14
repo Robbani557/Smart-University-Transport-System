@@ -3,8 +3,8 @@ package transport.ui;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
-
 import model.BusAllocationResult;
+
 public class AllocationTableModel extends AbstractTableModel {
 
     private final String[] columns = {
