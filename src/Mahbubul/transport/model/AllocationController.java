@@ -5,17 +5,22 @@ public class AllocationController {
     private TransportData transportData;
     private AllocationService allocationService;
 
-    public AllocationController() {
+   public AllocationController() {
 
-        transportData = new TransportData();
+    this(new TransportData());
+}
 
-        AllocationDataGenerator.generateSampleBookings(
-                transportData
-        );
+public AllocationController(TransportData transportData) {
 
-        allocationService =
-                new AllocationService(transportData);
-    }
+    this.transportData = transportData;
+
+    AllocationDataGenerator.generateSampleBookings(
+            transportData
+    );
+
+    allocationService =
+            new AllocationService(transportData);
+}
 
     public BusAllocationResult allocateBus(
             String routeName,
