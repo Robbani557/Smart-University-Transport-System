@@ -1,290 +1,420 @@
 package authentication;
 
 import java.awt.*;
+import java.awt.event.*;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.*;
+
 import components.RoundedButton;
 import components.RoundedTextField;
 import components.RoundedPasswordField;
 
 public class ForgotPasswordFrame extends JFrame {
 
-    private JPanel leftPanel;
-    private JPanel rightPanel;
-
-    private JLabel lblTitle;
-    private JLabel lblStudentId;
-    private JLabel lblEmail;
-    private JLabel lblNewPassword;
-    private JLabel lblConfirmPassword;
+    private static final Color PRIMARY = new Color(21, 101, 192);
+    private static final Color PRIMARY_DARK = new Color(13, 71, 161);
+    private static final Color TEXT_DARK = new Color(35, 45, 60);
+    private static final Color TEXT_MUTED = new Color(105, 115, 130);
 
     private JTextField txtStudentId;
     private JTextField txtEmail;
-
     private JPasswordField txtNewPassword;
     private JPasswordField txtConfirmPassword;
 
     private JButton btnVerify;
     private JButton btnReset;
 
-    private JLabel lblBackToLogin;
+    private boolean verified = false;
 
     public ForgotPasswordFrame() {
-
         initializeFrame();
-
-        createLeftPanel();
-
-        createRightPanel();
-
-        addTitle();
-
-        addStudentId();
-
-        addEmail();
-
-        addVerifyButton();
-
-        addNewPassword();
-
-        addConfirmPassword();
-
-        addResetButton();
-
-        addBackToLogin();
+        buildInterface();
     }
 
     private void initializeFrame() {
-
         setTitle("Smart University Transport System");
-
-        setSize(1000, 650);
-
-        setLocationRelativeTo(null);
-
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        setLayout(null);
-
-        getContentPane().setBackground(Color.WHITE);
+        setMinimumSize(new Dimension(850, 600));
+        setSize(1050, 680);
+        setLocationRelativeTo(null);
     }
 
-    private void createLeftPanel() {
+    private void buildInterface() {
+        JPanel root = new JPanel(new GridBagLayout());
+        root.setBackground(Color.WHITE);
 
-        leftPanel = new JPanel();
+        JPanel brand = createBrandPanel();
+        JPanel form = createFormPanel();
 
-        leftPanel.setBounds(0, 0, 350, 650);
+        GridBagConstraints left = new GridBagConstraints();
+        left.gridx = 0;
+        left.gridy = 0;
+        left.weightx = 0.40;
+        left.weighty = 1.0;
+        left.fill = GridBagConstraints.BOTH;
 
-        leftPanel.setBackground(new Color(21, 101, 192));
+        GridBagConstraints right = new GridBagConstraints();
+        right.gridx = 1;
+        right.gridy = 0;
+        right.weightx = 0.60;
+        right.weighty = 1.0;
+        right.fill = GridBagConstraints.BOTH;
 
-        leftPanel.setLayout(null);
+        root.add(brand, left);
+        root.add(form, right);
 
-        add(leftPanel);
-
-        JLabel title = new JLabel("RESET");
-
-        title.setBounds(100, 120, 180, 40);
-
-        title.setForeground(Color.WHITE);
-
-        title.setFont(new Font("Segoe UI", Font.BOLD, 30));
-
-        leftPanel.add(title);
-
-        JLabel text = new JLabel("Forgot your");
-
-        text.setBounds(105, 190, 180, 30);
-
-        text.setForeground(Color.WHITE);
-
-        text.setFont(new Font("Segoe UI", Font.PLAIN, 22));
-
-        leftPanel.add(text);
-
-        JLabel text2 = new JLabel("password?");
-
-        text2.setBounds(115, 225, 160, 30);
-
-        text2.setForeground(Color.WHITE);
-
-        text2.setFont(new Font("Segoe UI", Font.PLAIN, 22));
-
-        leftPanel.add(text2);
-
-        JLabel tagline = new JLabel("Let's get you back on track.");
-
-        tagline.setBounds(65, 275, 240, 25);
-
-        tagline.setForeground(new Color(220, 235, 255));
-
-        tagline.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        leftPanel.add(tagline);
+        setContentPane(root);
     }
 
-    private void createRightPanel() {
+    private JPanel createBrandPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(PRIMARY);
+        panel.setBorder(BorderFactory.createEmptyBorder(25, 30, 25, 30));
 
-        rightPanel = new JPanel();
+        GridBagConstraints g = new GridBagConstraints();
+        g.gridx = 0;
+        g.weightx = 1.0;
+        g.fill = GridBagConstraints.HORIZONTAL;
+        g.anchor = GridBagConstraints.CENTER;
 
-        rightPanel.setBounds(350, 0, 650, 650);
+        g.gridy = 0;
+        g.weighty = 0.12;
+        g.fill = GridBagConstraints.NONE;
+        panel.add(new ImageLabel("/images/logo.png", 130, 130), g);
 
-        rightPanel.setBackground(Color.WHITE);
+        JLabel title = label("RESET", 30, Font.BOLD, Color.WHITE);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        g.gridy = 1;
+        g.weighty = 0;
+        g.fill = GridBagConstraints.HORIZONTAL;
+        g.insets = new Insets(4, 0, 2, 0);
+        panel.add(title, g);
 
-        rightPanel.setLayout(null);
+        JLabel line1 = label("Forgot your", 21, Font.PLAIN, Color.WHITE);
+        line1.setHorizontalAlignment(SwingConstants.CENTER);
+        g.gridy = 2;
+        g.insets = new Insets(2, 0, 0, 0);
+        panel.add(line1, g);
 
-        add(rightPanel);
+        JLabel line2 = label("password?", 21, Font.PLAIN, Color.WHITE);
+        line2.setHorizontalAlignment(SwingConstants.CENTER);
+        g.gridy = 3;
+        panel.add(line2, g);
+
+        JLabel tagline = label("Let's get you back on track.", 14, Font.PLAIN,
+                new Color(220, 235, 255));
+        tagline.setHorizontalAlignment(SwingConstants.CENTER);
+        g.gridy = 4;
+        g.insets = new Insets(8, 0, 5, 0);
+        panel.add(tagline, g);
+
+        g.gridy = 5;
+        g.weighty = 0.88;
+        g.fill = GridBagConstraints.BOTH;
+        g.insets = new Insets(8, 0, 0, 0);
+        panel.add(new ImageLabel("/images/bus.png", 420, 260), g);
+
+        return panel;
     }
 
-    private void addTitle() {
+    private JPanel createFormPanel() {
+        JPanel outer = new JPanel(new GridBagLayout());
+        outer.setBackground(Color.WHITE);
+        outer.setBorder(BorderFactory.createEmptyBorder(35, 45, 30, 45));
 
-        lblTitle = new JLabel("FORGOT PASSWORD");
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
 
-        lblTitle.setBounds(190, 45, 300, 40);
+        GridBagConstraints g = new GridBagConstraints();
+        g.gridx = 0;
+        g.weightx = 1.0;
+        g.fill = GridBagConstraints.HORIZONTAL;
 
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 27));
+        g.gridy = 0;
+        g.fill = GridBagConstraints.NONE;
+        g.insets = new Insets(0, 0, 6, 0);
+        form.add(new ImageLabel("/images/logo.png", 60, 60), g);
 
-        lblTitle.setForeground(new Color(21, 101, 192));
+        JLabel title = label("FORGOT PASSWORD", 27, Font.BOLD, PRIMARY);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        g.gridy = 1;
+        g.fill = GridBagConstraints.HORIZONTAL;
+        g.insets = new Insets(0, 0, 4, 0);
+        form.add(title, g);
 
-        rightPanel.add(lblTitle);
-    }
+        JLabel subtitle = label(
+                "Verify your account and create a new password",
+                13, Font.PLAIN, TEXT_MUTED
+        );
+        subtitle.setHorizontalAlignment(SwingConstants.CENTER);
+        g.gridy = 2;
+        g.insets = new Insets(0, 0, 20, 0);
+        form.add(subtitle, g);
 
-    private void addStudentId() {
-
-        lblStudentId = new JLabel("Student ID");
-
-        lblStudentId.setBounds(150, 120, 120, 25);
-
-        lblStudentId.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-
-        rightPanel.add(lblStudentId);
+        g.gridy = 3;
+        g.insets = new Insets(0, 0, 5, 0);
+        form.add(fieldLabel("Student ID"), g);
 
         txtStudentId = new RoundedTextField("Enter your Student ID");
+        txtStudentId.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtStudentId.setPreferredSize(new Dimension(340, 42));
+        g.gridy = 4;
+        g.insets = new Insets(0, 0, 12, 0);
+        form.add(txtStudentId, g);
 
-        txtStudentId.setBounds(150, 150, 320, 38);
-
-        rightPanel.add(txtStudentId);
-    }
-
-    private void addEmail() {
-
-        lblEmail = new JLabel("Email");
-
-        lblEmail.setBounds(150, 205, 120, 25);
-
-        lblEmail.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-
-        rightPanel.add(lblEmail);
+        g.gridy = 5;
+        g.insets = new Insets(0, 0, 5, 0);
+        form.add(fieldLabel("Email"), g);
 
         txtEmail = new RoundedTextField("Enter your email");
-
-        txtEmail.setBounds(150, 235, 320, 38);
-
-        rightPanel.add(txtEmail);
-    }
-
-    private void addVerifyButton() {
+        txtEmail.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtEmail.setPreferredSize(new Dimension(340, 42));
+        g.gridy = 6;
+        g.insets = new Insets(0, 0, 14, 0);
+        form.add(txtEmail, g);
 
         btnVerify = new RoundedButton("VERIFY");
+        btnVerify.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnVerify.setBackground(PRIMARY);
+        btnVerify.setForeground(Color.WHITE);
+        btnVerify.setFocusPainted(false);
+        btnVerify.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnVerify.setPreferredSize(new Dimension(180, 42));
+        btnVerify.addActionListener(e -> verifyAccount());
 
-        btnVerify.setBounds(235, 295, 150, 42);
+        g.gridy = 7;
+        g.fill = GridBagConstraints.NONE;
+        g.insets = new Insets(0, 0, 18, 0);
+        form.add(btnVerify, g);
 
-        rightPanel.add(btnVerify);
-        btnVerify.addActionListener(e -> {
-
-    JOptionPane.showMessageDialog(
-        this,
-        "Verification successful!",
-        "Verification",
-        JOptionPane.INFORMATION_MESSAGE
-    );
-
-});
-    }
-
-    private void addNewPassword() {
-
-        lblNewPassword = new JLabel("New Password");
-
-        lblNewPassword.setBounds(150, 365, 120, 25);
-
-        lblNewPassword.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-
-        rightPanel.add(lblNewPassword);
+        g.gridy = 8;
+        g.fill = GridBagConstraints.HORIZONTAL;
+        g.insets = new Insets(0, 0, 5, 0);
+        form.add(fieldLabel("New Password"), g);
 
         txtNewPassword = new RoundedPasswordField("Enter new password");
+        txtNewPassword.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtNewPassword.setPreferredSize(new Dimension(340, 42));
+        txtNewPassword.setEnabled(false);
+        g.gridy = 9;
+        g.insets = new Insets(0, 0, 12, 0);
+        form.add(txtNewPassword, g);
 
-        txtNewPassword.setBounds(150, 395, 320, 38);
-
-        rightPanel.add(txtNewPassword);
-    }
-
-    private void addConfirmPassword() {
-
-        lblConfirmPassword = new JLabel("Confirm Password");
-
-        lblConfirmPassword.setBounds(150, 440, 150, 25);
-
-        lblConfirmPassword.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-
-        rightPanel.add(lblConfirmPassword);
+        g.gridy = 10;
+        g.insets = new Insets(0, 0, 5, 0);
+        form.add(fieldLabel("Confirm Password"), g);
 
         txtConfirmPassword = new RoundedPasswordField("Confirm your new password");
-
-        txtConfirmPassword.setBounds(150, 470, 320, 38);
-
-        rightPanel.add(txtConfirmPassword);
-    }
-
-    private void addResetButton() {
+        txtConfirmPassword.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtConfirmPassword.setPreferredSize(new Dimension(340, 42));
+        txtConfirmPassword.setEnabled(false);
+        g.gridy = 11;
+        g.insets = new Insets(0, 0, 14, 0);
+        form.add(txtConfirmPassword, g);
 
         btnReset = new RoundedButton("RESET PASSWORD");
+        btnReset.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnReset.setBackground(PRIMARY);
+        btnReset.setForeground(Color.WHITE);
+        btnReset.setFocusPainted(false);
+        btnReset.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnReset.setPreferredSize(new Dimension(190, 42));
+        btnReset.setEnabled(false);
+        btnReset.addActionListener(e -> resetPassword());
 
-        btnReset.setBounds(235, 525, 150, 42);
+        g.gridy = 12;
+        g.fill = GridBagConstraints.NONE;
+        g.insets = new Insets(0, 0, 14, 0);
+        form.add(btnReset, g);
 
-        rightPanel.add(btnReset);
-        btnReset.addActionListener(e -> {
+        btnReset.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                if (btnReset.isEnabled()) btnReset.setBackground(PRIMARY_DARK);
+            }
 
-    JOptionPane.showMessageDialog(
-        this,
-        "Password reset successful!",
-        "Success",
-        JOptionPane.INFORMATION_MESSAGE
-    );
+            public void mouseExited(MouseEvent e) {
+                if (btnReset.isEnabled()) btnReset.setBackground(PRIMARY);
+            }
+        });
 
-});
-    }
-
-    private void addBackToLogin() {
-
-        lblBackToLogin = new JLabel("Back to Login");
-
-        lblBackToLogin.setBounds(265, 570, 120, 20);
-
-        lblBackToLogin.setForeground(new Color(21, 101, 192));
-
-        lblBackToLogin.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        lblBackToLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        rightPanel.add(lblBackToLogin);
-
-        lblBackToLogin.addMouseListener(new java.awt.event.MouseAdapter() {
-
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-
+        JLabel back = link("Back to Login");
+        back.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
                 new LoginFrame().setVisible(true);
-
                 dispose();
             }
         });
+
+        g.gridy = 13;
+        g.insets = new Insets(0, 0, 0, 0);
+        form.add(back, g);
+
+        GridBagConstraints outerG = new GridBagConstraints();
+        outerG.gridx = 0;
+        outerG.gridy = 0;
+        outerG.weightx = 1.0;
+        outerG.weighty = 1.0;
+        outerG.fill = GridBagConstraints.HORIZONTAL;
+        outerG.anchor = GridBagConstraints.CENTER;
+        outer.add(form, outerG);
+
+        return outer;
+    }
+
+    private void verifyAccount() {
+        String studentId = txtStudentId.getText().trim();
+        String email = txtEmail.getText().trim();
+
+        if (studentId.isEmpty() || email.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please enter both Student ID and email.",
+                    "Verification",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        verified = true;
+
+        txtNewPassword.setEnabled(true);
+        txtConfirmPassword.setEnabled(true);
+        btnReset.setEnabled(true);
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Verification successful! You can now create a new password.",
+                "Verification",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    private void resetPassword() {
+        if (!verified) {
+            return;
+        }
+
+        String newPassword = new String(txtNewPassword.getPassword());
+        String confirmPassword = new String(txtConfirmPassword.getPassword());
+
+        if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please enter and confirm your new password.",
+                    "Password Reset",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Passwords do not match.",
+                    "Password Reset",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Password reset successful!",
+                "Success",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+
+        new LoginFrame().setVisible(true);
+        dispose();
+    }
+
+    private JLabel fieldLabel(String text) {
+        return label(text, 14, Font.BOLD, TEXT_DARK);
+    }
+
+    private JLabel link(String text) {
+        JLabel l = label(text, 13, Font.PLAIN, PRIMARY);
+        l.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return l;
+    }
+
+    private JLabel label(String text, int size, int style, Color color) {
+        JLabel l = new JLabel(text);
+        l.setFont(new Font("Segoe UI", style, size));
+        l.setForeground(color);
+        return l;
+    }
+
+    private static class ImageLabel extends JLabel {
+        private final Image image;
+
+        ImageLabel(String resource, int width, int height) {
+            setPreferredSize(new Dimension(width, height));
+            setMinimumSize(new Dimension(40, 40));
+            setHorizontalAlignment(SwingConstants.CENTER);
+            setVerticalAlignment(SwingConstants.CENTER);
+
+            Image loaded = null;
+
+            try {
+                java.net.URL url =
+                        ForgotPasswordFrame.class.getResource(resource);
+
+                if (url != null) {
+                    loaded = ImageIO.read(url);
+                }
+            } catch (IOException ignored) {
+            }
+
+            image = loaded;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            if (image == null) {
+                return;
+            }
+
+            int availableWidth = Math.max(1, getWidth() - 10);
+            int availableHeight = Math.max(1, getHeight() - 10);
+
+            double scale = Math.min(
+                    availableWidth / (double) image.getWidth(null),
+                    availableHeight / (double) image.getHeight(null)
+            );
+
+            int width = Math.max(
+                    1, (int) (image.getWidth(null) * scale));
+
+            int height = Math.max(
+                    1, (int) (image.getHeight(null) * scale));
+
+            int x = (getWidth() - width) / 2;
+            int y = (getHeight() - height) / 2;
+
+            Graphics2D g2 = (Graphics2D) g.create();
+
+            g2.setRenderingHint(
+                    RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR
+            );
+
+            g2.setRenderingHint(
+                    RenderingHints.KEY_RENDERING,
+                    RenderingHints.VALUE_RENDER_QUALITY
+            );
+
+            g2.drawImage(image, x, y, width, height, this);
+            g2.dispose();
+        }
     }
 
     public static void main(String[] args) {
-
-        SwingUtilities.invokeLater(() -> {
-
-            new ForgotPasswordFrame().setVisible(true);
-
-        });
+        SwingUtilities.invokeLater(
+                () -> new ForgotPasswordFrame().setVisible(true)
+        );
     }
 }

@@ -1,386 +1,291 @@
 package authentication;
 
 import java.awt.*;
+import java.awt.event.*;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.*;
-import components.RoundedTextField;
-import components.RoundedPasswordField;
+
 import components.RoundedButton;
+import components.RoundedPasswordField;
+import components.RoundedTextField;
 
 public class LoginFrame extends JFrame {
 
-    // Window Size
-    private static final int FRAME_WIDTH = 1000;
-    private static final int FRAME_HEIGHT = 600;
-
-    // Panels
-    private JPanel leftPanel;
-    private JPanel rightPanel;
-
-    // Left Panel Labels
-    private JLabel lblWelcome;
-    private JLabel lblBookSeat;
-    private JLabel lblTravel;
-
-    // Right Panel Labels
-    private JLabel lblLogin;
-    
-    private JLabel lblUsername;
+    private static final Color PRIMARY = new Color(21, 101, 192);
+    private static final Color PRIMARY_DARK = new Color(13, 71, 161);
+    private static final Color TEXT_DARK = new Color(35, 45, 60);
+    private static final Color TEXT_MUTED = new Color(105, 115, 130);
 
     private JTextField txtUsername;
-    
-    private JLabel lblPassword;
-
     private JPasswordField txtPassword;
-    
     private JCheckBox chkShowPassword;
-    
     private JButton btnLogin;
-    
-    private JLabel lblForgotPassword;
-    
-    private JLabel lblRegister;
-    
-    
 
     public LoginFrame() {
-
-        initializeFrame();
-
-        createLeftPanel();
-
-        createRightPanel();
-        
-        addUsernameField();
-        
-        addPasswordField();
-        
-        addShowPassword();
-        
-        addLoginButton();
-        
-        addForgotPassword();
-        
-        addRegisterLink();
-        lblForgotPassword.addMouseListener(new java.awt.event.MouseAdapter() {
-
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-
-                System.out.println("Forgot Password clicked");
-
-            }
-
-        });
-
-        lblRegister.addMouseListener(new java.awt.event.MouseAdapter() {
-
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-
-                System.out.println("Register clicked");
-
-            }
-
-        });
-        
-        addBusImage();
-    }
-
-    private void initializeFrame() {
-
         setTitle("Smart University Transport System");
-
-        setSize(FRAME_WIDTH, FRAME_HEIGHT);
-
-        setLocationRelativeTo(null);
-
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        setLayout(null);
-
-        getContentPane().setBackground(Color.WHITE);
-
+        setMinimumSize(new Dimension(850, 560));
+        setSize(1100, 700);
+        setLocationRelativeTo(null);
+        buildInterface();
     }
 
-    private void createLeftPanel() {
+    private void buildInterface() {
+        JPanel root = new JPanel(new GridBagLayout());
+        root.setBackground(Color.WHITE);
 
-        leftPanel = new JPanel();
+        JPanel brand = createBrandPanel();
+        JPanel login = createLoginPanel();
 
-        leftPanel.setBounds(0, 0, 350, FRAME_HEIGHT);
+        GridBagConstraints a = new GridBagConstraints();
+        a.gridx = 0; a.gridy = 0;
+        a.weightx = 0.42; a.weighty = 1;
+        a.fill = GridBagConstraints.BOTH;
 
-        leftPanel.setBackground(new Color(21, 101, 192));
+        GridBagConstraints b = new GridBagConstraints();
+        b.gridx = 1; b.gridy = 0;
+        b.weightx = 0.58; b.weighty = 1;
+        b.fill = GridBagConstraints.BOTH;
 
-        leftPanel.setLayout(null);
-
-        add(leftPanel);
-
-        lblWelcome = new JLabel("WELCOME");
-
-        lblWelcome.setBounds(75, 100, 250, 40);
-
-        lblWelcome.setForeground(Color.WHITE);
-
-        lblWelcome.setFont(new Font("Segoe UI", Font.BOLD, 30));
-
-        leftPanel.add(lblWelcome);
-
-        lblBookSeat = new JLabel("Book Your Seat");
-
-        lblBookSeat.setBounds(60, 165, 250, 30);
-
-        lblBookSeat.setForeground(Color.WHITE);
-
-        lblBookSeat.setFont(new Font("Segoe UI", Font.PLAIN, 22));
-
-        leftPanel.add(lblBookSeat);
-
-        lblTravel = new JLabel("Before Travelling");
-
-        lblTravel.setBounds(35, 200, 280, 30);
-
-        lblTravel.setForeground(Color.WHITE);
-
-        lblTravel.setFont(new Font("Segoe UI", Font.PLAIN, 22));
-
-        leftPanel.add(lblTravel);
-        
-        JLabel tagline = new JLabel("Smart travel starts here.");
-
-        tagline.setBounds(75, 245, 220, 25);
-
-        tagline.setForeground(new Color(220, 235, 255));
-
-        tagline.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        leftPanel.add(tagline);
-
+        root.add(brand, a);
+        root.add(login, b);
+        setContentPane(root);
     }
 
-    private void createRightPanel() {
-        
+    private JPanel createBrandPanel() {
+        JPanel p = new JPanel(new GridBagLayout());
+        p.setBackground(PRIMARY);
+        p.setBorder(BorderFactory.createEmptyBorder(25, 30, 25, 30));
 
-        rightPanel = new JPanel();
+        GridBagConstraints g = new GridBagConstraints();
+        g.gridx = 0; g.weightx = 1; g.fill = GridBagConstraints.HORIZONTAL;
+        g.anchor = GridBagConstraints.CENTER;
 
-        rightPanel.setBounds(350, 0, 650, FRAME_HEIGHT);
+        g.gridy = 0; g.weighty = 0.15;
+        p.add(new ImageLabel("/images/logo.png", 150, 150), g);
 
-        rightPanel.setBackground(Color.WHITE);
+        JLabel welcome = label("WELCOME", 30, Font.BOLD, Color.WHITE);
+        welcome.setHorizontalAlignment(SwingConstants.CENTER);
+        g.gridy = 1; g.weighty = 0;
+        p.add(welcome, g);
 
-        rightPanel.setLayout(null);
+        JLabel t1 = label("Book Your Seat", 21, Font.PLAIN, Color.WHITE);
+        t1.setHorizontalAlignment(SwingConstants.CENTER);
+        g.gridy = 2;
+        p.add(t1, g);
 
-        add(rightPanel);
+        JLabel t2 = label("Before Travelling", 21, Font.PLAIN, Color.WHITE);
+        t2.setHorizontalAlignment(SwingConstants.CENTER);
+        g.gridy = 3;
+        p.add(t2, g);
 
-        lblLogin = new JLabel("LOGIN");
+        JLabel tag = label("Smart travel starts here.", 14, Font.PLAIN,
+                new Color(220, 235, 255));
+        tag.setHorizontalAlignment(SwingConstants.CENTER);
+        g.gridy = 4;
+        g.insets = new Insets(8, 0, 5, 0);
+        p.add(tag, g);
 
-        lblLogin.setBounds(250, 70, 200, 40);
+        g.gridy = 5; g.weighty = 0.85;
+        g.fill = GridBagConstraints.BOTH;
+        g.insets = new Insets(8, 0, 0, 0);
+        p.add(new ImageLabel("/images/bus.png", 430, 240), g);
 
-        lblLogin.setFont(new Font("Segoe UI", Font.BOLD, 32));
-
-        lblLogin.setForeground(new Color(21, 101, 192));
-
-        rightPanel.add(lblLogin);
-
+        return p;
     }
-    
-    private void addUsernameField(){
 
-        lblUsername = new JLabel("Username");
+    private JPanel createLoginPanel() {
+        JPanel outer = new JPanel(new GridBagLayout());
+        outer.setBackground(Color.WHITE);
+        outer.setBorder(BorderFactory.createEmptyBorder(35, 45, 35, 45));
 
-        lblUsername.setBounds(150,150,100,25);
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
 
-        lblUsername.setFont(new Font("Segoe UI",Font.PLAIN,16));
+        GridBagConstraints g = new GridBagConstraints();
+        g.gridx = 0; g.weightx = 1;
+        g.fill = GridBagConstraints.HORIZONTAL;
 
-        rightPanel.add(lblUsername);
+        g.gridy = 0; g.fill = GridBagConstraints.NONE;
+        g.insets = new Insets(0, 0, 7, 0);
+        form.add(new ImageLabel("/images/logo.png", 72, 72), g);
+
+        JLabel title = label("LOGIN", 30, Font.BOLD, PRIMARY);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        g.gridy = 1; g.insets = new Insets(0, 0, 4, 0);
+        g.fill = GridBagConstraints.HORIZONTAL;
+        form.add(title, g);
+
+        JLabel sub = label("Sign in to manage your university transport",
+                14, Font.PLAIN, TEXT_MUTED);
+        sub.setHorizontalAlignment(SwingConstants.CENTER);
+        g.gridy = 2; g.insets = new Insets(0, 0, 22, 0);
+        form.add(sub, g);
+
+        g.gridy = 3; g.insets = new Insets(0, 0, 6, 0);
+        form.add(fieldLabel("Username"), g);
 
         txtUsername = new RoundedTextField("Enter your username");
+        txtUsername.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        txtUsername.setPreferredSize(new Dimension(340, 44));
+        g.gridy = 4; g.insets = new Insets(0, 0, 15, 0);
+        form.add(txtUsername, g);
 
-        txtUsername.setBounds(150,180,320,40);
-
-        txtUsername.setFont(new Font("Segoe UI",Font.PLAIN,16));
-
-        rightPanel.add(txtUsername);
-
-}
-    
-    private void addPasswordField(){
-
-        lblPassword = new JLabel("Password");
-
-        lblPassword.setBounds(150,250,100,25);
-
-        lblPassword.setFont(new Font("Segoe UI",Font.PLAIN,16));
-
-        rightPanel.add(lblPassword);
+        g.gridy = 5; g.insets = new Insets(0, 0, 6, 0);
+        form.add(fieldLabel("Password"), g);
 
         txtPassword = new RoundedPasswordField("Enter your password");
+        txtPassword.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        txtPassword.setPreferredSize(new Dimension(340, 44));
+        g.gridy = 6; g.insets = new Insets(0, 0, 7, 0);
+        form.add(txtPassword, g);
 
-        txtPassword.setBounds(150,280,320,40);
-
-        txtPassword.setFont(new Font("Segoe UI",Font.PLAIN,16));
-
-        rightPanel.add(txtPassword);
-
-}
-    
-    private void addShowPassword(){
+        JPanel options = new JPanel(new BorderLayout());
+        options.setOpaque(false);
 
         chkShowPassword = new JCheckBox("Show Password");
+        chkShowPassword.setOpaque(false);
+        chkShowPassword.setForeground(TEXT_MUTED);
+        chkShowPassword.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        chkShowPassword.setFocusPainted(false);
+        chkShowPassword.addActionListener(e -> togglePassword());
 
-        chkShowPassword.setBounds(150,330,150,20);
-
-        chkShowPassword.setBackground(Color.WHITE);
-
-        chkShowPassword.setFont(new Font("Segoe UI",Font.PLAIN,14));
-
-        chkShowPassword.addActionListener(e -> {
-
-            if(chkShowPassword.isSelected()){
-
-                txtPassword.setEchoChar((char)0);
-
+        JLabel forgot = link("Forgot Password?");
+        forgot.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                new ForgotPasswordFrame().setVisible(true);
+                dispose();
             }
-
-            else{
-
-                txtPassword.setEchoChar((Character) UIManager.get("PasswordField.echoChar"));
-
-            }
-
         });
 
-        rightPanel.add(chkShowPassword);
+        options.add(chkShowPassword, BorderLayout.WEST);
+        options.add(forgot, BorderLayout.EAST);
 
-}
-    
-    private void addLoginButton() {
+        g.gridy = 7; g.insets = new Insets(0, 0, 20, 0);
+        form.add(options, g);
 
         btnLogin = new RoundedButton("LOGIN");
-
-        btnLogin.setBounds(200, 380, 220, 45);
-
-        btnLogin.setBackground(new Color(21, 101, 192));
-
-        btnLogin.setForeground(Color.WHITE);
-
         btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 16));
-
+        btnLogin.setBackground(PRIMARY);
+        btnLogin.setForeground(Color.WHITE);
         btnLogin.setFocusPainted(false);
-
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        rightPanel.add(btnLogin);
-        btnLogin.addActionListener(e -> {
-
-    JOptionPane.showMessageDialog(
-        this,
-        "Login button clicked!",
-        "Login",
-        JOptionPane.INFORMATION_MESSAGE
-    );
-
-});
-        
-        btnLogin.addMouseListener(new java.awt.event.MouseAdapter() {
-
-    @Override
-    public void mouseEntered(java.awt.event.MouseEvent e) {
-
-        btnLogin.setBackground(new Color(25, 118, 210));
-
-    }
-
-    @Override
-    public void mouseExited(java.awt.event.MouseEvent e) {
-
-        btnLogin.setBackground(new Color(21, 101, 192));
-
-    }
-
-});
-
-}
-    
-    private void addForgotPassword() {
-
-        lblForgotPassword = new JLabel("Forgot Password?");
-
-        lblForgotPassword.setBounds(240, 440, 150, 20);
-
-        lblForgotPassword.setForeground(new Color(21,101,192));
-
-        lblForgotPassword.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        lblForgotPassword.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        rightPanel.add(lblForgotPassword);
-        
-        lblForgotPassword.addMouseListener(new java.awt.event.MouseAdapter() {
-
-        @Override
-        public void mouseClicked(java.awt.event.MouseEvent e) {
-
-            new ForgotPasswordFrame().setVisible(true);
-
-            dispose();
-        }
-});
-
-}
-    
-    private void addRegisterLink(){
-
-        lblRegister = new JLabel("New User? Register");
-
-        lblRegister.setBounds(220,470,170,20);
-
-        lblRegister.setForeground(new Color(21,101,192));
-
-        lblRegister.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        lblRegister.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        rightPanel.add(lblRegister);
-        
-        lblRegister.addMouseListener(new java.awt.event.MouseAdapter() {
-
-        @Override
-        public void mouseClicked(java.awt.event.MouseEvent e) {
-
-            new RegisterFrame().setVisible(true);
-
-            dispose();
-    }
-});
-
-}
-    
-    private void addBusImage() {
-
-        ImageIcon icon = new ImageIcon(
-                getClass().getResource("/images/bus.png")
-        );
-
-        Image image = icon.getImage();
-
-        Image scaled = image.getScaledInstance(
-                260,
-                160,
-                Image.SCALE_SMOOTH
-        );
-
-        JLabel busLabel = new JLabel(new ImageIcon(scaled));
-
-        busLabel.setBounds(45, 330, 260, 160);
-
-        leftPanel.add(busLabel);
-}
-
-    public static void main(String[] args) {
-
-        SwingUtilities.invokeLater(() -> {
-
-            new LoginFrame().setVisible(true);
-
+        btnLogin.setPreferredSize(new Dimension(340, 46));
+        btnLogin.addActionListener(e -> handleLogin());
+        btnLogin.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { btnLogin.setBackground(PRIMARY_DARK); }
+            public void mouseExited(MouseEvent e) { btnLogin.setBackground(PRIMARY); }
         });
 
+        g.gridy = 8; g.insets = new Insets(0, 0, 17, 0);
+        form.add(btnLogin, g);
+
+        JLabel register = link("New User? Register");
+        register.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                new RegisterFrame().setVisible(true);
+                dispose();
+            }
+        });
+
+        g.gridy = 9; g.fill = GridBagConstraints.NONE;
+        g.insets = new Insets(0, 0, 0, 0);
+        form.add(register, g);
+
+        GridBagConstraints outerG = new GridBagConstraints();
+        outerG.gridx = 0; outerG.gridy = 0;
+        outerG.weightx = 1; outerG.weighty = 1;
+        outerG.fill = GridBagConstraints.HORIZONTAL;
+        outer.add(form, outerG);
+
+        return outer;
+    }
+
+    private JLabel fieldLabel(String text) {
+        return label(text, 14, Font.BOLD, TEXT_DARK);
+    }
+
+    private JLabel link(String text) {
+        JLabel l = label(text, 13, Font.PLAIN, PRIMARY);
+        l.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return l;
+    }
+
+    private JLabel label(String text, int size, int style, Color color) {
+        JLabel l = new JLabel(text);
+        l.setFont(new Font("Segoe UI", style, size));
+        l.setForeground(color);
+        return l;
+    }
+
+    private void togglePassword() {
+        if (chkShowPassword.isSelected()) {
+            txtPassword.setEchoChar((char) 0);
+        } else {
+            Object echo = UIManager.get("PasswordField.echoChar");
+            txtPassword.setEchoChar(echo instanceof Character ? (Character) echo : '\u2022');
+        }
+    }
+
+    private void handleLogin() {
+        String username = txtUsername.getText().trim();
+        String password = new String(txtPassword.getPassword());
+
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Please enter both username and password.",
+                    "Login", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        JOptionPane.showMessageDialog(this,
+                "Login successful!",
+                "Login", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private static class ImageLabel extends JLabel {
+        private final Image image;
+
+        ImageLabel(String resource, int w, int h) {
+            setPreferredSize(new Dimension(w, h));
+            setMinimumSize(new Dimension(40, 40));
+            setHorizontalAlignment(SwingConstants.CENTER);
+            setVerticalAlignment(SwingConstants.CENTER);
+            Image loaded = null;
+            try {
+                java.net.URL url = LoginFrame.class.getResource(resource);
+                if (url != null) loaded = ImageIO.read(url);
+            } catch (IOException ignored) {}
+            image = loaded;
+        }
+
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (image == null) return;
+
+            int aw = Math.max(1, getWidth() - 10);
+            int ah = Math.max(1, getHeight() - 10);
+            double scale = Math.min(
+                    aw / (double) image.getWidth(null),
+                    ah / (double) image.getHeight(null));
+
+            int w = Math.max(1, (int)(image.getWidth(null) * scale));
+            int h = Math.max(1, (int)(image.getHeight(null) * scale));
+            int x = (getWidth() - w) / 2;
+            int y = (getHeight() - h) / 2;
+
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.setRenderingHint(RenderingHints.KEY_RENDERING,
+                    RenderingHints.VALUE_RENDER_QUALITY);
+            g2.drawImage(image, x, y, w, h, this);
+            g2.dispose();
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
     }
 }
