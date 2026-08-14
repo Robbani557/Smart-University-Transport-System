@@ -2,6 +2,7 @@ package transport.ui;
 
 import javax.swing.*;
 import java.awt.*;
+import transport.model.AllocationController;
 
 public class AllocationDashboard extends JFrame {
 
@@ -20,7 +21,9 @@ public class AllocationDashboard extends JFrame {
         setLocationRelativeTo(null);
 
         allocationPanel =
-                new BusAllocationPanel();
+                new BusAllocationPanel(
+        new AllocationController()
+);
 
         add(allocationPanel, BorderLayout.CENTER);
     }

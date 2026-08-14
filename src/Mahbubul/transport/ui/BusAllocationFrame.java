@@ -3,6 +3,8 @@ package transport.ui;
 import javax.swing.*;
 import java.awt.*;
 
+import transport.model.AllocationController;
+
 public class BusAllocationFrame extends JFrame {
 
     public BusAllocationFrame() {
@@ -63,13 +65,10 @@ public class BusAllocationFrame extends JFrame {
                 BorderLayout.SOUTH
         );
 
-        add(
-                header,
-                BorderLayout.NORTH
-        );
-
-        add(
-                new BusAllocationPanel(),
+              add(
+                new BusAllocationPanel(
+                        new AllocationController()
+                ),
                 BorderLayout.CENTER
         );
     }
