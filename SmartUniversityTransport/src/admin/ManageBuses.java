@@ -6,6 +6,8 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -82,11 +84,12 @@ public class ManageBuses extends Application {
         // ==========================================
 
         VBox content =
-                new VBox(15);
+                new VBox(18);
 
         content.setPadding(
-                new Insets(20)
+                new Insets(24)
         );
+        content.setFillWidth(true);
 
         // ==========================================
         // TITLE AREA
@@ -106,7 +109,7 @@ public class ManageBuses extends Application {
                 Font.font(
                         "Segoe UI",
                         FontWeight.BOLD,
-                        22
+                        24
                 )
         );
 
@@ -125,8 +128,8 @@ public class ManageBuses extends Application {
         Button addBus =
                 new Button("+ Add Bus");
 
-        addBus.setPrefWidth(110);
-        addBus.setPrefHeight(38);
+        addBus.setPrefWidth(135);
+        addBus.setPrefHeight(40);
 
         addBus.setTextFill(
                 Color.WHITE
@@ -168,8 +171,9 @@ public class ManageBuses extends Application {
                 "Search bus by ID, number or type..."
         );
 
-        searchField.setPrefWidth(350);
-        searchField.setPrefHeight(38);
+        searchField.setPrefHeight(40);
+        searchField.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(searchField, Priority.ALWAYS);
 
         searchField.setStyle(
                 "-fx-background-color: white;" +
@@ -185,6 +189,19 @@ public class ManageBuses extends Application {
         );
 
         // ==========================================
+        // SEARCH
+        // ==========================================
+
+        HBox searchRow = new HBox(10);
+        searchRow.setAlignment(Pos.CENTER_LEFT);
+
+        Label searchIcon = new Label("⌕");
+        searchIcon.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
+        searchIcon.setTextFill(Color.web(BLUE));
+
+        searchRow.getChildren().addAll(searchIcon, searchField);
+
+        // ==========================================
         // TABLE
         // ==========================================
 
@@ -196,7 +213,7 @@ public class ManageBuses extends Application {
                 new VBox();
 
         tableBox.setPadding(
-                new Insets(15)
+                new Insets(16)
         );
 
         tableBox.setStyle(
@@ -211,6 +228,8 @@ public class ManageBuses extends Application {
                 table
         );
 
+        VBox.setVgrow(table, Priority.ALWAYS);
+
         VBox.setVgrow(
                 tableBox,
                 Priority.ALWAYS
@@ -218,7 +237,7 @@ public class ManageBuses extends Application {
 
         content.getChildren().addAll(
                 heading,
-                searchField,
+                searchRow,
                 tableBox
         );
 
@@ -243,6 +262,8 @@ public class ManageBuses extends Application {
         stage.setTitle(
                 "Smart University Transport System - Manage Buses"
         );
+        stage.setMinWidth(900);
+        stage.setMinHeight(600);
 
         stage.setScene(scene);
 
@@ -268,30 +289,45 @@ public class ManageBuses extends Application {
         VBox sidebar =
                 new VBox();
 
-        sidebar.setPrefWidth(180);
+        sidebar.setPrefWidth(230);
+        sidebar.setMinWidth(205);
 
         sidebar.setStyle(
                 "-fx-background-color: " +
                 BLUE + ";"
         );
 
-        Label logo =
-                new Label("🚌 SUTS");
+        ImageView logo =
+                createImageView("/images/logo.png", 64, 64);
 
-        logo.setTextFill(
-                Color.WHITE
-        );
+        Label brandName =
+                new Label("Smart University");
 
-        logo.setFont(
+        brandName.setTextFill(Color.WHITE);
+        brandName.setFont(
                 Font.font(
                         "Segoe UI",
                         FontWeight.BOLD,
-                        18
+                        15
+                )
+        );
+
+        Label systemName =
+                new Label("Transport System");
+
+        systemName.setTextFill(
+                Color.web("#DCEBFF")
+        );
+
+        systemName.setFont(
+                Font.font(
+                        "Segoe UI",
+                        10
                 )
         );
 
         Label admin =
-                new Label("Admin Panel");
+                new Label("ADMIN PANEL");
 
         admin.setTextFill(
                 Color.WHITE
@@ -306,20 +342,22 @@ public class ManageBuses extends Application {
 
         VBox logoBox =
                 new VBox(
-                        2,
+                        4,
                         logo,
+                        brandName,
+                        systemName,
                         admin
                 );
 
         logoBox.setPadding(
-                new Insets(15)
+                new Insets(20, 18, 18, 18)
         );
 
         VBox menu =
                 new VBox(5);
 
         menu.setPadding(
-                new Insets(10)
+                new Insets(10, 10, 12, 10)
         );
 
         Button dashboard =
@@ -382,10 +420,7 @@ public class ManageBuses extends Application {
 
         dashboard.setOnAction(e -> {
 
-            showMessage(
-                    "Dashboard",
-                    "Dashboard page."
-            );
+            new AdminDashboard().start(stage);
 
         });
 
@@ -409,7 +444,7 @@ public class ManageBuses extends Application {
 
         buses.setOnAction(e -> {
 
-            // Current page
+            // Current page - keep this page open
 
         });
 
@@ -422,40 +457,20 @@ public class ManageBuses extends Application {
 
         });
 
-        schedules.setOnAction(e -> {
-
-            showMessage(
-                    "Schedules",
-                    "Schedules page."
-            );
-
-        });
+            schedules.setOnAction(e -> {
+                new Schedules().start(stage);
+            });
 
         bookings.setOnAction(e -> {
-
-            showMessage(
-                    "Bookings",
-                    "Bookings page."
-            );
-
+            new Bookings().start(stage);
         });
 
         reports.setOnAction(e -> {
-
-            showMessage(
-                    "Reports",
-                    "Reports page."
-            );
-
+            new Reports().start(stage);
         });
 
         settings.setOnAction(e -> {
-
-            showMessage(
-                    "Settings",
-                    "Settings page."
-            );
-
+            new Settings().start(stage);
         });
 
         menu.getChildren().addAll(
@@ -485,10 +500,20 @@ public class ManageBuses extends Application {
 
         logout.setOnAction(e -> {
 
-            showMessage(
-                    "Logout",
-                    "You have been logged out."
+            Alert alert = new Alert(
+                    Alert.AlertType.CONFIRMATION,
+                    "Are you sure you want to log out?",
+                    ButtonType.YES,
+                    ButtonType.NO
             );
+
+            alert.setTitle("Logout");
+            alert.setHeaderText(null);
+
+            if (alert.showAndWait().orElse(ButtonType.NO)
+                    == ButtonType.YES) {
+                stage.close();
+            }
 
         });
 
@@ -517,7 +542,8 @@ public class ManageBuses extends Application {
                 Double.MAX_VALUE
         );
 
-        button.setPrefHeight(40);
+        button.setPrefHeight(42);
+        button.setMinHeight(42);
 
         button.setAlignment(
                 Pos.CENTER_LEFT
@@ -541,8 +567,31 @@ public class ManageBuses extends Application {
         button.setStyle(
                 "-fx-background-color: transparent;" +
                 "-fx-text-fill: white;" +
+                "-fx-background-radius: 7px;" +
                 "-fx-cursor: hand;"
         );
+
+        button.setOnMouseEntered(e -> {
+            if (!button.getText().contains("Manage Buses")) {
+                button.setStyle(
+                        "-fx-background-color: rgba(255,255,255,0.12);" +
+                        "-fx-text-fill: white;" +
+                        "-fx-background-radius: 7px;" +
+                        "-fx-cursor: hand;"
+                );
+            }
+        });
+
+        button.setOnMouseExited(e -> {
+            if (!button.getText().contains("Manage Buses")) {
+                button.setStyle(
+                        "-fx-background-color: transparent;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-background-radius: 7px;" +
+                        "-fx-cursor: hand;"
+                );
+            }
+        });
 
         return button;
     }
@@ -563,13 +612,13 @@ public class ManageBuses extends Application {
         topBar.setPadding(
                 new Insets(
                         0,
-                        20,
+                        24,
                         0,
-                        20
+                        24
                 )
         );
 
-        topBar.setPrefHeight(58);
+        topBar.setPrefHeight(66);
 
         topBar.setStyle(
                 "-fx-background-color: white;" +
@@ -806,7 +855,15 @@ public class ManageBuses extends Application {
                 TableView.CONSTRAINED_RESIZE_POLICY
         );
 
-        table.setFixedCellSize(40);
+        table.setFixedCellSize(44);
+        table.setPlaceholder(new Label("No buses found."));
+
+        table.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-border-color: transparent;" +
+                "-fx-font-family: 'Segoe UI';" +
+                "-fx-font-size: 12px;"
+        );
     }
 
     // ==========================================
@@ -1271,6 +1328,29 @@ public class ManageBuses extends Application {
                         busList.remove(bus);
                     }
                 });
+    }
+
+    private ImageView createImageView(
+            String resource,
+            double width,
+            double height) {
+
+        java.io.InputStream stream =
+                ManageBuses.class.getResourceAsStream(resource);
+
+        if (stream == null) {
+            return new ImageView();
+        }
+
+        ImageView view =
+                new ImageView(new Image(stream));
+
+        view.setFitWidth(width);
+        view.setFitHeight(height);
+        view.setPreserveRatio(true);
+        view.setSmooth(true);
+
+        return view;
     }
 
     // ==========================================

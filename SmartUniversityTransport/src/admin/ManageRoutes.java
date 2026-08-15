@@ -22,6 +22,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -75,10 +77,10 @@ public class ManageRoutes extends Application {
         // MAIN CONTENT
         // ==========================================
 
-        VBox content = new VBox(15);
+        VBox content = new VBox(18);
 
         content.setPadding(
-                new Insets(20)
+                new Insets(24)
         );
 
         // ==========================================
@@ -98,7 +100,7 @@ public class ManageRoutes extends Application {
                 Font.font(
                         "Segoe UI",
                         FontWeight.BOLD,
-                        22
+                        24
                 )
         );
 
@@ -117,8 +119,8 @@ public class ManageRoutes extends Application {
         Button addRoute =
                 new Button("+ Add Route");
 
-        addRoute.setPrefWidth(120);
-        addRoute.setPrefHeight(38);
+        addRoute.setPrefWidth(135);
+        addRoute.setPrefHeight(40);
 
         addRoute.setTextFill(
                 Color.WHITE
@@ -142,8 +144,28 @@ public class ManageRoutes extends Application {
                 e -> showAddRouteDialog()
         );
 
+        Label subtitle =
+                new Label(
+                        "Add, search, edit and manage transport routes"
+                );
+
+        subtitle.setFont(
+                Font.font("Segoe UI", 12)
+        );
+
+        subtitle.setTextFill(
+                Color.web("#667085")
+        );
+
+        VBox titleBox =
+                new VBox(
+                        3,
+                        title,
+                        subtitle
+                );
+
         heading.getChildren().addAll(
-                title,
+                titleBox,
                 headingSpacer,
                 addRoute
         );
@@ -159,14 +181,15 @@ public class ManageRoutes extends Application {
                 "Search route..."
         );
 
-        searchField.setPrefWidth(300);
-        searchField.setPrefHeight(38);
+        searchField.setPrefHeight(40);
+        searchField.setMaxWidth(Double.MAX_VALUE);
 
         searchField.setStyle(
                 "-fx-background-color: white;" +
                 "-fx-border-color: " + BORDER + ";" +
-                "-fx-border-radius: 6px;" +
-                "-fx-background-radius: 6px;"
+                "-fx-border-radius: 7px;" +
+                "-fx-background-radius: 7px;" +
+                "-fx-padding: 8 12 8 12;"
         );
 
         searchField.textProperty().addListener(
@@ -186,7 +209,7 @@ public class ManageRoutes extends Application {
                 new VBox();
 
         tableBox.setPadding(
-                new Insets(15)
+                new Insets(16)
         );
 
         tableBox.setStyle(
@@ -197,6 +220,11 @@ public class ManageRoutes extends Application {
         );
 
         tableBox.getChildren().add(table);
+
+        VBox.setVgrow(
+                table,
+                Priority.ALWAYS
+        );
 
         VBox.setVgrow(
                 tableBox,
@@ -231,6 +259,8 @@ public class ManageRoutes extends Application {
                 "Smart University Transport System - Manage Routes"
         );
 
+        stage.setMinWidth(900);
+        stage.setMinHeight(600);
         stage.setScene(scene);
 
         stage.show();
@@ -255,57 +285,75 @@ public class ManageRoutes extends Application {
         VBox sidebar =
                 new VBox();
 
-        sidebar.setPrefWidth(180);
+        sidebar.setPrefWidth(230);
+        sidebar.setMinWidth(205);
 
         sidebar.setStyle(
                 "-fx-background-color: " + BLUE + ";"
         );
 
-        Label logo =
-                new Label("🚌 SUTS");
-
-        logo.setTextFill(
-                Color.WHITE
+        ImageView logo = createImageView(
+                "/images/logo.png",
+                64,
+                64
         );
 
-        logo.setFont(
+        Label brandName =
+                new Label("Smart University");
+
+        brandName.setTextFill(Color.WHITE);
+        brandName.setFont(
                 Font.font(
                         "Segoe UI",
                         FontWeight.BOLD,
-                        18
+                        15
                 )
         );
 
+        Label brandSub =
+                new Label("Transport System");
+
+        brandSub.setTextFill(
+                Color.web("#DCEBFF")
+        );
+
+        brandSub.setFont(
+                Font.font("Segoe UI", 10)
+        );
+
         Label admin =
-                new Label("Admin Panel");
+                new Label("ADMIN PANEL");
 
         admin.setTextFill(
-                Color.WHITE
+                Color.web("#BBD6F7")
         );
 
         admin.setFont(
                 Font.font(
                         "Segoe UI",
+                        FontWeight.BOLD,
                         10
                 )
         );
 
         VBox logoBox =
                 new VBox(
-                        2,
+                        4,
                         logo,
+                        brandName,
+                        brandSub,
                         admin
                 );
 
         logoBox.setPadding(
-                new Insets(15)
+                new Insets(20, 18, 18, 18)
         );
 
         VBox menu =
                 new VBox(5);
 
         menu.setPadding(
-                new Insets(10)
+                new Insets(10, 10, 12, 10)
         );
 
         Button dashboard =
@@ -367,10 +415,10 @@ public class ManageRoutes extends Application {
 
         dashboard.setOnAction(e -> {
 
-            showMessage(
-                    "Dashboard",
-                    "Dashboard page."
-            );
+            AdminDashboard page =
+                    new AdminDashboard();
+
+            page.start(stage);
 
         });
 
@@ -391,10 +439,10 @@ public class ManageRoutes extends Application {
 
         buses.setOnAction(e -> {
 
-            showMessage(
-                    "Manage Buses",
-                    "Manage Buses page will open here."
-            );
+            ManageBuses page =
+                    new ManageBuses();
+
+            page.start(stage);
 
         });
 
@@ -408,39 +456,19 @@ public class ManageRoutes extends Application {
         });
 
         schedules.setOnAction(e -> {
-
-            showMessage(
-                    "Schedules",
-                    "Schedules page."
-            );
-
+            new Schedules().start(stage);
         });
 
         bookings.setOnAction(e -> {
-
-            showMessage(
-                    "Bookings",
-                    "Bookings page."
-            );
-
+            new Bookings().start(stage);
         });
 
         reports.setOnAction(e -> {
-
-            showMessage(
-                    "Reports",
-                    "Reports page."
-            );
-
+            new Reports().start(stage);
         });
 
         settings.setOnAction(e -> {
-
-            showMessage(
-                    "Settings",
-                    "Settings page."
-            );
-
+            new Settings().start(stage);
         });
 
         menu.getChildren().addAll(
@@ -470,10 +498,23 @@ public class ManageRoutes extends Application {
 
         logout.setOnAction(e -> {
 
-            showMessage(
-                    "Logout",
-                    "You have been logged out."
-            );
+            Alert alert =
+                    new Alert(
+                            Alert.AlertType.CONFIRMATION,
+                            "Are you sure you want to log out?",
+                            ButtonType.YES,
+                            ButtonType.NO
+                    );
+
+            alert.setTitle("Logout");
+            alert.setHeaderText(null);
+
+            if (alert.showAndWait()
+                    .orElse(ButtonType.NO)
+                    == ButtonType.YES) {
+
+                stage.close();
+            }
 
         });
 
@@ -548,13 +589,13 @@ public class ManageRoutes extends Application {
         topBar.setPadding(
                 new Insets(
                         0,
-                        20,
+                        24,
                         0,
-                        20
+                        24
                 )
         );
 
-        topBar.setPrefHeight(58);
+        topBar.setPrefHeight(66);
 
         topBar.setStyle(
                 "-fx-background-color: white;" +
@@ -756,7 +797,7 @@ public class ManageRoutes extends Application {
             TableView.CONSTRAINED_RESIZE_POLICY
     );
 
-    table.setFixedCellSize(40);
+    table.setFixedCellSize(44);
 }
 
     // ==========================================
@@ -1192,6 +1233,35 @@ public class ManageRoutes extends Application {
                         );
                     }
                 });
+    }
+
+    // ==========================================
+    // IMAGE HELPER
+    // ==========================================
+
+    private ImageView createImageView(
+            String resource,
+            double width,
+            double height
+    ) {
+
+        java.io.InputStream stream =
+                ManageRoutes.class
+                        .getResourceAsStream(resource);
+
+        if (stream == null) {
+            return new ImageView();
+        }
+
+        Image image = new Image(stream);
+
+        ImageView view = new ImageView(image);
+        view.setFitWidth(width);
+        view.setFitHeight(height);
+        view.setPreserveRatio(true);
+        view.setSmooth(true);
+
+        return view;
     }
 
     // ==========================================

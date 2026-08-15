@@ -8,6 +8,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -26,117 +28,111 @@ public class ManageStudents extends Application {
     private static final String WHITE = "#FFFFFF";
     private static final String BORDER = "#E0E0E0";
     private static final String DARK = "#212121";
+    private static final String MUTED = "#667085";
+    private static final String RED = "#C62828";
+
+    private Stage currentStage;
+    private Button studentsButton;
 
     @Override
     public void start(Stage stage) {
+        currentStage = stage;
 
         BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + LIGHT + ";");
 
-        root.setStyle(
-                "-fx-background-color: " + LIGHT + ";"
-        );
+        root.setLeft(createSidebar(stage));
+        root.setTop(createTopBar());
+        root.setCenter(createContent());
 
-        // =========================
-        // SIDEBAR
-        // =========================
+        Scene scene = new Scene(root, 1200, 760);
 
+        stage.setTitle(
+                "Smart University Transport System - Manage Students");
+        stage.setMinWidth(900);
+        stage.setMinHeight(600);
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    private VBox createSidebar(Stage stage) {
         VBox sidebar = new VBox();
+        sidebar.setPrefWidth(230);
+        sidebar.setMinWidth(205);
+        sidebar.setStyle("-fx-background-color: " + BLUE + ";");
 
-        sidebar.setPrefWidth(180);
+        VBox brand = new VBox(4);
+        brand.setPadding(new Insets(20, 18, 18, 18));
+        brand.setAlignment(Pos.CENTER_LEFT);
 
-        sidebar.setStyle(
-                "-fx-background-color: " + BLUE + ";"
-        );
+        ImageView logo = createImageView("/images/logo.png", 64, 64);
 
-        Label logo = new Label("🚌 SUTS");
+        Label name = new Label("Smart University");
+        name.setTextFill(Color.WHITE);
+        name.setFont(Font.font("Segoe UI", FontWeight.BOLD, 15));
 
-        logo.setTextFill(Color.WHITE);
-        logo.setFont(
-                Font.font(
-                        "Segoe UI",
-                        FontWeight.BOLD,
-                        18
-                )
-        );
+        Label system = new Label("Transport System");
+        system.setTextFill(Color.web("#DCEBFF"));
+        system.setFont(Font.font("Segoe UI", 10));
 
-        Label admin = new Label("Admin Panel");
+        Label admin = new Label("ADMIN PANEL");
+        admin.setTextFill(Color.web("#BBD6F7"));
+        admin.setFont(Font.font("Segoe UI", FontWeight.BOLD, 10));
 
-        admin.setTextFill(Color.WHITE);
-        admin.setFont(
-                Font.font("Segoe UI", 10)
-        );
-
-        VBox logoBox = new VBox(
-                2,
-                logo,
-                admin
-        );
-
-        logoBox.setPadding(
-                new Insets(15)
-        );
+        brand.getChildren().addAll(logo, name, system, admin);
 
         VBox menu = new VBox(5);
+        menu.setPadding(new Insets(10, 10, 12, 10));
 
-        menu.setPadding(
-                new Insets(10)
-        );
+        Button dashboard = createMenuButton("⌂   Dashboard");
+        studentsButton = createMenuButton("♙   Manage Students");
+        Button routes = createMenuButton("⌁   Manage Routes");
+        Button buses = createMenuButton("▣   Manage Buses");
+        Button allocation = createMenuButton("⇄   Bus Allocation");
+        Button schedules = createMenuButton("◷   Schedules");
+        Button bookings = createMenuButton("▤   Bookings");
+        Button reports = createMenuButton("▥   Reports");
+        Button settings = createMenuButton("⚙   Settings");
 
-        Button dashboard =
-                createMenuButton("⌂   Dashboard");
+        setActive(studentsButton);
 
-        Button manageStudents =
-                createMenuButton(
-                        "♙   Manage Students"
-                );
+        dashboard.setOnAction(e -> {
+            new AdminDashboard().start(stage);
+        });
 
-        Button manageRoutes =
-                createMenuButton(
-                        "⌁   Manage Routes"
-                );
+        studentsButton.setOnAction(e -> {
+            setActive(studentsButton);
+        });
 
-        Button manageBuses =
-                createMenuButton(
-                        "▣   Manage Buses"
-                );
+        routes.setOnAction(e -> {
+            new ManageRoutes().start(stage);
+        });
 
-        Button allocation =
-                createMenuButton(
-                        "⇄   Bus Allocation"
-                );
+        buses.setOnAction(e -> {
+            new ManageBuses().start(stage);
+        });
 
-        Button schedules =
-                createMenuButton(
-                        "◷   Schedules"
-                );
+        allocation.setOnAction(e -> showMessage(
+                "Bus Allocation",
+                "Bus Allocation page will open here."));
 
-        Button bookings =
-                createMenuButton(
-                        "▤   Bookings"
-                );
+        schedules.setOnAction(e ->
+                new Schedules().start(stage));
 
-        Button reports =
-                createMenuButton(
-                        "▥   Reports"
-                );
+        bookings.setOnAction(e ->
+                new Bookings().start(stage));
 
-        Button settings =
-                createMenuButton(
-                        "⚙   Settings"
-                );
+        reports.setOnAction(e ->
+                new Reports().start(stage));
 
-        // Active button
-        manageStudents.setStyle(
-                "-fx-background-color: " + BLUE2 + ";" +
-                "-fx-background-radius: 6px;" +
-                "-fx-text-fill: white;"
-        );
+        settings.setOnAction(e ->
+                new Settings().start(stage));
 
         menu.getChildren().addAll(
                 dashboard,
-                manageStudents,
-                manageRoutes,
-                manageBuses,
+                studentsButton,
+                routes,
+                buses,
                 allocation,
                 schedules,
                 bookings,
@@ -145,412 +141,315 @@ public class ManageStudents extends Application {
         );
 
         Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        VBox.setVgrow(
-                spacer,
-                Priority.ALWAYS
-        );
+        Button logout = createMenuButton("⇥   Logout");
+        logout.setOnAction(e -> {
+            Alert alert = new Alert(
+                    Alert.AlertType.CONFIRMATION,
+                    "Are you sure you want to log out?",
+                    ButtonType.YES,
+                    ButtonType.NO
+            );
+            alert.setTitle("Logout");
+            alert.setHeaderText(null);
 
-        Button logout =
-                createMenuButton("⇥   Logout");
+            if (alert.showAndWait().orElse(ButtonType.NO)
+                    == ButtonType.YES) {
+                stage.close();
+            }
+        });
 
         sidebar.getChildren().addAll(
-                logoBox,
+                brand,
                 menu,
                 spacer,
                 logout
         );
 
-        // =========================
-        // TOP BAR
-        // =========================
+        return sidebar;
+    }
 
-        HBox topBar = new HBox();
-
-        topBar.setAlignment(
-                Pos.CENTER_LEFT
-        );
-
-        topBar.setPadding(
-                new Insets(
-                        0,
-                        20,
-                        0,
-                        20
-                )
-        );
-
-        topBar.setPrefHeight(58);
+    private HBox createTopBar() {
+        HBox topBar = new HBox(14);
+        topBar.setAlignment(Pos.CENTER_LEFT);
+        topBar.setPadding(new Insets(0, 24, 0, 24));
+        topBar.setMinHeight(66);
 
         topBar.setStyle(
                 "-fx-background-color: white;" +
-                "-fx-border-color: " + BORDER + ";"
+                "-fx-border-color: " + BORDER + ";" +
+                "-fx-border-width: 0 0 1 0;"
         );
 
-        Label hamburger =
-                new Label("☰");
+        Label menuIcon = new Label("☰");
+        menuIcon.setFont(Font.font("Segoe UI", 20));
+        menuIcon.setTextFill(Color.web(DARK));
 
-        hamburger.setFont(
-                Font.font("Segoe UI", 20)
-        );
+        Label page = new Label("Manage Students");
+        page.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
+        page.setTextFill(Color.web(DARK));
 
-        Region topSpacer =
-                new Region();
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox.setHgrow(
-                topSpacer,
-                Priority.ALWAYS
-        );
+        Label notification = new Label("♧");
+        notification.setFont(Font.font("Segoe UI", 20));
+        notification.setTextFill(Color.web(BLUE));
+        notification.setCursor(javafx.scene.Cursor.HAND);
 
-        Label notification =
-                new Label("♧");
+        VBox userBox = new VBox(1);
+        userBox.setAlignment(Pos.CENTER_RIGHT);
 
-        notification.setFont(
-                Font.font("Segoe UI", 18)
-        );
+        Label user = new Label("Admin User");
+        user.setFont(Font.font("Segoe UI", FontWeight.BOLD, 11));
+        user.setTextFill(Color.web(DARK));
 
-        Label user =
-                new Label(
-                        "Admin User\nSuper Admin"
-                );
+        Label role = new Label("Super Admin");
+        role.setFont(Font.font("Segoe UI", 10));
+        role.setTextFill(Color.web(MUTED));
 
-        user.setFont(
-                Font.font(
-                        "Segoe UI",
-                        FontWeight.BOLD,
-                        11
-                )
-        );
+        userBox.getChildren().addAll(user, role);
 
         topBar.getChildren().addAll(
-                hamburger,
-                topSpacer,
+                menuIcon,
+                page,
+                spacer,
                 notification,
-                user
+                userBox
         );
 
-        // =========================
-        // MAIN CONTENT
-        // =========================
+        return topBar;
+    }
 
-        VBox content =
-                new VBox(15);
+    private VBox createContent() {
+        VBox content = new VBox(18);
+        content.setPadding(new Insets(24));
+        content.setFillWidth(true);
 
-        content.setPadding(
-                new Insets(20)
+        HBox heading = new HBox(12);
+        heading.setAlignment(Pos.CENTER_LEFT);
+
+        VBox titleBox = new VBox(3);
+
+        Label title = new Label("Manage Students");
+        title.setFont(Font.font(
+                "Segoe UI",
+                FontWeight.BOLD,
+                24
+        ));
+        title.setTextFill(Color.web(DARK));
+
+        Label subtitle = new Label(
+                "Add, search, edit and remove student records"
         );
+        subtitle.setFont(Font.font("Segoe UI", 12));
+        subtitle.setTextFill(Color.web(MUTED));
 
-        // Heading
-        HBox heading =
-                new HBox();
+        titleBox.getChildren().addAll(title, subtitle);
 
-        heading.setAlignment(
-                Pos.CENTER_LEFT
-        );
+        Region headingSpacer = new Region();
+        HBox.setHgrow(headingSpacer, Priority.ALWAYS);
 
-        Label title =
-                new Label("Manage Students");
-
-        title.setFont(
-                Font.font(
-                        "Segoe UI",
-                        FontWeight.BOLD,
-                        22
-                )
-        );
-
-        title.setTextFill(
-                Color.web(DARK)
-        );
-
-        Region headingSpacer =
-                new Region();
-
-        HBox.setHgrow(
-                headingSpacer,
-                Priority.ALWAYS
-        );
-
-        Button addStudent =
-                new Button("+ Add Student");
-
-        addStudent.setPrefWidth(125);
-        addStudent.setPrefHeight(38);
-
-        addStudent.setTextFill(
-                Color.WHITE
-        );
-
-        addStudent.setFont(
-                Font.font(
-                        "Segoe UI",
-                        FontWeight.BOLD,
-                        13
-                )
-        );
+        Button addStudent = new Button("+  Add Student");
+        addStudent.setPrefHeight(40);
+        addStudent.setMinWidth(135);
+        addStudent.setFont(Font.font(
+                "Segoe UI",
+                FontWeight.BOLD,
+                13
+        ));
+        addStudent.setTextFill(Color.WHITE);
+        addStudent.setCursor(javafx.scene.Cursor.HAND);
 
         addStudent.setStyle(
                 "-fx-background-color: " + BLUE + ";" +
-                "-fx-background-radius: 6px;" +
+                "-fx-background-radius: 7px;" +
                 "-fx-cursor: hand;"
         );
 
-        addStudent.setOnAction(
-                e -> addStudent()
+        addStudent.setOnMouseEntered(e ->
+                addStudent.setStyle(
+                        "-fx-background-color: " + BLUE2 + ";" +
+                        "-fx-background-radius: 7px;" +
+                        "-fx-cursor: hand;"
+                )
         );
 
+        addStudent.setOnMouseExited(e ->
+                addStudent.setStyle(
+                        "-fx-background-color: " + BLUE + ";" +
+                        "-fx-background-radius: 7px;" +
+                        "-fx-cursor: hand;"
+                )
+        );
+
+        addStudent.setOnAction(e -> addStudent());
+
         heading.getChildren().addAll(
-                title,
+                titleBox,
                 headingSpacer,
                 addStudent
         );
 
-        // =========================
-        // SEARCH
-        // =========================
+        HBox searchBar = new HBox(10);
+        searchBar.setAlignment(Pos.CENTER_LEFT);
+        searchBar.setMinHeight(42);
 
-        TextField search =
-                new TextField();
-
+        TextField search = new TextField();
         search.setPromptText(
-                "Search student..."
+                "Search by student ID, name, department or phone..."
         );
-
-        search.setPrefWidth(280);
-        search.setPrefHeight(38);
+        search.setPrefHeight(40);
+        search.setMaxWidth(Double.MAX_VALUE);
 
         search.setStyle(
                 "-fx-background-color: white;" +
                 "-fx-border-color: " + BORDER + ";" +
-                "-fx-border-radius: 6px;" +
-                "-fx-background-radius: 6px;"
+                "-fx-border-radius: 7px;" +
+                "-fx-background-radius: 7px;" +
+                "-fx-padding: 8 12 8 12;"
         );
 
-        // =========================
-        // TABLE
-        // =========================
+        HBox.setHgrow(search, Priority.ALWAYS);
+
+        Label count = new Label();
+        count.setFont(Font.font("Segoe UI", 11));
+        count.setTextFill(Color.web(MUTED));
+        count.setMinWidth(125);
+        count.setAlignment(Pos.CENTER_RIGHT);
 
         createTable();
-
         loadStudents();
+        updateCount(count, students.size());
 
         search.textProperty().addListener(
-                (obs, oldValue, newValue) ->
-                        searchStudent(newValue)
+                (obs, oldValue, newValue) -> {
+                    searchStudent(newValue);
+                    updateCount(count, table.getItems().size());
+                }
         );
 
-        VBox tableBox =
-                new VBox(table);
+        searchBar.getChildren().addAll(search, count);
 
-        tableBox.setPadding(
-                new Insets(15)
-        );
-
-        tableBox.setStyle(
+        VBox tableCard = new VBox(10);
+        tableCard.setPadding(new Insets(16));
+        tableCard.setStyle(
                 "-fx-background-color: white;" +
                 "-fx-border-color: " + BORDER + ";" +
-                "-fx-border-radius: 8px;" +
-                "-fx-background-radius: 8px;"
+                "-fx-border-radius: 10px;" +
+                "-fx-background-radius: 10px;"
         );
 
-        VBox.setVgrow(
-                tableBox,
-                Priority.ALWAYS
-        );
+        tableCard.getChildren().add(table);
+        VBox.setVgrow(table, Priority.ALWAYS);
+        VBox.setVgrow(tableCard, Priority.ALWAYS);
 
         content.getChildren().addAll(
                 heading,
-                search,
-                tableBox
+                searchBar,
+                tableCard
         );
 
-        VBox.setVgrow(
-                tableBox,
-                Priority.ALWAYS
-        );
+        VBox.setVgrow(tableCard, Priority.ALWAYS);
 
-        root.setLeft(sidebar);
-        root.setTop(topBar);
-        root.setCenter(content);
-
-        Scene scene =
-                new Scene(
-                        root,
-                        1200,
-                        760
-                );
-
-        stage.setTitle(
-                "Smart University Transport System - Manage Students"
-        );
-
-        stage.setScene(scene);
-        stage.show();
+        return content;
     }
-
-    // =========================
-    // MAIN METHOD
-    // =========================
-
-    public static void main(String[] args) {
-
-        launch(args);
-
-    }
-
-    // =========================
-    // MENU BUTTON
-    // =========================
-
-    private Button createMenuButton(
-            String text
-    ) {
-
-        Button button =
-                new Button(text);
-
-        button.setMaxWidth(
-                Double.MAX_VALUE
-        );
-
-        button.setPrefHeight(40);
-
-        button.setAlignment(
-                Pos.CENTER_LEFT
-        );
-
-        button.setPadding(
-                new Insets(10)
-        );
-
-        button.setTextFill(
-                Color.WHITE
-        );
-
-        button.setFont(
-                Font.font(
-                        "Segoe UI",
-                        12
-                )
-        );
-
-        button.setStyle(
-                "-fx-background-color: transparent;" +
-                "-fx-text-fill: white;" +
-                "-fx-cursor: hand;"
-        );
-
-        return button;
-    }
-
-    // =========================
-    // TABLE
-    // =========================
 
     private void createTable() {
+        table.getColumns().clear();
 
         TableColumn<Student, String> id =
-                new TableColumn<>("ID");
-
+                new TableColumn<>("Student ID");
         id.setCellValueFactory(
                 new PropertyValueFactory<>("id")
         );
+        id.setMinWidth(110);
 
         TableColumn<Student, String> name =
                 new TableColumn<>("Name");
-
         name.setCellValueFactory(
                 new PropertyValueFactory<>("name")
         );
+        name.setMinWidth(170);
 
         TableColumn<Student, String> department =
                 new TableColumn<>("Department");
-
         department.setCellValueFactory(
                 new PropertyValueFactory<>("department")
         );
+        department.setMinWidth(130);
 
         TableColumn<Student, String> phone =
                 new TableColumn<>("Phone");
-
         phone.setCellValueFactory(
                 new PropertyValueFactory<>("phone")
         );
+        phone.setMinWidth(140);
 
         TableColumn<Student, Void> action =
-                new TableColumn<>("Action");
+                new TableColumn<>("Actions");
+        action.setMinWidth(130);
+        action.setMaxWidth(150);
 
-        action.setCellFactory(
-                column -> new TableCell<Student, Void>() {
+        action.setCellFactory(column ->
+                new TableCell<Student, Void>() {
 
                     private final Button edit =
-                            new Button("✎");
+                            new Button("Edit");
 
                     private final Button delete =
-                            new Button("▣");
+                            new Button("Delete");
 
                     private final HBox box =
-                            new HBox(5);
+                            new HBox(6);
 
                     {
+                        edit.setFont(Font.font("Segoe UI", 10));
+                        edit.setTextFill(Color.WHITE);
+                        edit.setCursor(javafx.scene.Cursor.HAND);
                         edit.setStyle(
-                                "-fx-background-color: #1565C0;" +
-                                "-fx-text-fill: white;"
+                                "-fx-background-color: " + BLUE + ";" +
+                                "-fx-background-radius: 5px;"
                         );
 
+                        delete.setFont(Font.font("Segoe UI", 10));
+                        delete.setTextFill(Color.WHITE);
+                        delete.setCursor(javafx.scene.Cursor.HAND);
                         delete.setStyle(
-                                "-fx-background-color: #C62828;" +
-                                "-fx-text-fill: white;"
+                                "-fx-background-color: " + RED + ";" +
+                                "-fx-background-radius: 5px;"
                         );
 
-                        edit.setOnAction(
-                                e -> {
+                        edit.setOnAction(e -> {
+                            Student student =
+                                    getTableView()
+                                            .getItems()
+                                            .get(getIndex());
 
-                                    Student s =
-                                            getTableView()
-                                                    .getItems()
-                                                    .get(getIndex());
+                            editStudent(student);
+                        });
 
-                                    editStudent(s);
-                                }
-                        );
+                        delete.setOnAction(e -> {
+                            Student student =
+                                    getTableView()
+                                            .getItems()
+                                            .get(getIndex());
 
-                        delete.setOnAction(
-                                e -> {
+                            deleteStudent(student);
+                        });
 
-                                    Student s =
-                                            getTableView()
-                                                    .getItems()
-                                                    .get(getIndex());
-
-                                    deleteStudent(s);
-                                }
-                        );
-
-                        box.setAlignment(
-                                Pos.CENTER
-                        );
-
-                        box.getChildren().addAll(
-                                edit,
-                                delete
-                        );
+                        box.setAlignment(Pos.CENTER);
+                        box.getChildren().addAll(edit, delete);
                     }
 
                     @Override
                     protected void updateItem(
                             Void item,
-                            boolean empty
-                    ) {
+                            boolean empty) {
 
-                        super.updateItem(
-                                item,
-                                empty
-                        );
-
-                        setGraphic(
-                                empty ? null : box
-                        );
+                        super.updateItem(item, empty);
+                        setGraphic(empty ? null : box);
                     }
                 }
         );
@@ -563,62 +462,57 @@ public class ManageStudents extends Application {
                 action
         );
 
-        table.setItems(
-                students
-        );
-
+        table.setItems(students);
         table.setColumnResizePolicy(
                 TableView.CONSTRAINED_RESIZE_POLICY
         );
+        table.setFixedCellSize(44);
+        table.setPlaceholder(
+                new Label("No students found.")
+        );
 
-        table.setFixedCellSize(38);
+        table.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-border-color: transparent;" +
+                "-fx-font-family: 'Segoe UI';" +
+                "-fx-font-size: 12px;"
+        );
     }
 
-    // =========================
-    // LOAD DATA
-    // =========================
-
     private void loadStudents() {
-
         students.clear();
 
         students.addAll(
-
                 new Student(
                         "ST001",
                         "Mehedi Hasan",
                         "CSE",
                         "01700000000"
                 ),
-
                 new Student(
                         "ST002",
                         "Nishan Ahmed",
                         "ETE",
                         "01800000000"
                 ),
-
                 new Student(
                         "ST003",
                         "Golam Robbani",
                         "CSE",
                         "01770000000"
                 ),
-
                 new Student(
                         "ST004",
                         "Mahbub Hasan",
                         "BBA",
                         "01900000000"
                 ),
-
                 new Student(
                         "ST005",
                         "Abdur Rahim",
                         "EEE",
                         "01600000000"
                 ),
-
                 new Student(
                         "ST006",
                         "Arafat Islam",
@@ -628,92 +522,48 @@ public class ManageStudents extends Application {
         );
     }
 
-    // =========================
-    // SEARCH
-    // =========================
-
-    private void searchStudent(
-            String keyword
-    ) {
-
+    private void searchStudent(String keyword) {
         if (keyword == null ||
                 keyword.trim().isEmpty()) {
 
-            table.setItems(
-                    students
-            );
-
+            table.setItems(students);
             return;
         }
 
         String search =
-                keyword.toLowerCase();
+                keyword.trim().toLowerCase();
 
         ObservableList<Student> result =
                 FXCollections.observableArrayList();
 
-        for (Student s : students) {
+        for (Student student : students) {
 
-            if (
-                    s.getId()
-                            .toLowerCase()
-                            .contains(search)
+            if (student.getId().toLowerCase()
+                    .contains(search)
+                    || student.getName().toLowerCase()
+                    .contains(search)
+                    || student.getDepartment().toLowerCase()
+                    .contains(search)
+                    || student.getPhone().contains(search)) {
 
-                    ||
-
-                    s.getName()
-                            .toLowerCase()
-                            .contains(search)
-
-                    ||
-
-                    s.getDepartment()
-                            .toLowerCase()
-                            .contains(search)
-
-                    ||
-
-                    s.getPhone()
-                            .contains(search)
-            ) {
-
-                result.add(s);
+                result.add(student);
             }
         }
 
         table.setItems(result);
     }
 
-    // =========================
-    // ADD STUDENT
-    // =========================
-
     private void addStudent() {
+        Dialog<ButtonType> dialog = new Dialog<>();
 
-        Dialog<ButtonType> dialog =
-                new Dialog<>();
+        dialog.setTitle("Add Student");
+        dialog.setHeaderText("Add New Student");
 
-        dialog.setTitle(
-                "Add Student"
-        );
+        TextField id = new TextField();
+        id.setPromptText("Student ID");
 
-        dialog.setHeaderText(
-                "Add New Student"
-        );
-
-        TextField id =
-                new TextField();
-
-        id.setPromptText(
-                "Student ID"
-        );
-
-        TextField name =
-                new TextField();
-
-        name.setPromptText(
-                "Student Name"
-        );
+        TextField name = new TextField();
+        name.setPromptText("Student Name");
 
         ComboBox<String> department =
                 new ComboBox<>();
@@ -726,24 +576,15 @@ public class ManageStudents extends Application {
                 "CE",
                 "ME"
         );
+        department.setPromptText("Department");
+        department.setMaxWidth(Double.MAX_VALUE);
 
-        department.setPromptText(
-                "Department"
-        );
+        TextField phone = new TextField();
+        phone.setPromptText("Phone Number");
 
-        TextField phone =
-                new TextField();
-
-        phone.setPromptText(
-                "Phone Number"
-        );
-
-        VBox box =
-                new VBox(10);
-
-        box.setPadding(
-                new Insets(15)
-        );
+        VBox box = new VBox(8);
+        box.setPadding(new Insets(12));
+        box.setPrefWidth(360);
 
         box.getChildren().addAll(
                 new Label("Student ID"),
@@ -756,117 +597,179 @@ public class ManageStudents extends Application {
                 phone
         );
 
-        dialog.getDialogPane()
-                .setContent(box);
+        dialog.getDialogPane().setContent(box);
+        dialog.getDialogPane().getButtonTypes().addAll(
+                ButtonType.CANCEL,
+                ButtonType.OK
+        );
 
-        dialog.getDialogPane()
-                .getButtonTypes()
-                .addAll(
-                        ButtonType.CANCEL,
-                        ButtonType.OK
+        dialog.showAndWait().ifPresent(result -> {
+
+            if (result != ButtonType.OK) {
+                return;
+            }
+
+            if (id.getText().trim().isEmpty()
+                    || name.getText().trim().isEmpty()
+                    || department.getValue() == null
+                    || phone.getText().trim().isEmpty()) {
+
+                showMessage(
+                        "Missing Information",
+                        "Please complete all student fields."
                 );
+                return;
+            }
 
-        dialog.showAndWait()
-                .ifPresent(result -> {
+            students.add(
+                    new Student(
+                            id.getText().trim(),
+                            name.getText().trim(),
+                            department.getValue(),
+                            phone.getText().trim()
+                    )
+            );
 
-                    if (result ==
-                            ButtonType.OK) {
-
-                        students.add(
-                                new Student(
-                                        id.getText(),
-                                        name.getText(),
-                                        department.getValue(),
-                                        phone.getText()
-                                )
-                        );
-
-                        table.refresh();
-                    }
-                });
+            table.setItems(students);
+            table.refresh();
+        });
     }
 
-    // =========================
-    // EDIT
-    // =========================
-
-    private void editStudent(
-            Student student
-    ) {
-
+    private void editStudent(Student student) {
         TextInputDialog dialog =
-                new TextInputDialog(
-                        student.getName()
-                );
+                new TextInputDialog(student.getName());
 
-        dialog.setTitle(
-                "Edit Student"
-        );
+        dialog.setTitle("Edit Student");
+        dialog.setHeaderText("Change Student Name");
+        dialog.setContentText("Name:");
 
-        dialog.setHeaderText(
-                "Change Student Name"
-        );
+        dialog.showAndWait().ifPresent(name -> {
 
-        dialog.showAndWait()
-                .ifPresent(
-                        name -> {
-
-                            if (!name.isEmpty()) {
-
-                                student.setName(
-                                        name
-                                );
-
-                                table.refresh();
-                            }
-                        }
-                );
+            if (!name.trim().isEmpty()) {
+                student.setName(name.trim());
+                table.refresh();
+            }
+        });
     }
 
-    // =========================
-    // DELETE
-    // =========================
+    private void deleteStudent(Student student) {
+        Alert alert = new Alert(
+                Alert.AlertType.CONFIRMATION
+        );
 
-    private void deleteStudent(
-            Student student
-    ) {
+        alert.setTitle("Delete Student");
+        alert.setHeaderText("Delete Student?");
+        alert.setContentText(
+                student.getName() +
+                " will be deleted."
+        );
+
+        alert.showAndWait().ifPresent(result -> {
+
+            if (result == ButtonType.OK) {
+                students.remove(student);
+                table.refresh();
+            }
+        });
+    }
+
+    private Button createMenuButton(String text) {
+        Button button = new Button(text);
+
+        button.setMaxWidth(Double.MAX_VALUE);
+        button.setPrefHeight(42);
+        button.setMinHeight(42);
+        button.setAlignment(Pos.CENTER_LEFT);
+        button.setPadding(new Insets(10, 12, 10, 12));
+        button.setTextFill(Color.WHITE);
+        button.setFont(Font.font("Segoe UI", 12));
+        button.setCursor(javafx.scene.Cursor.HAND);
+
+        button.setStyle(
+                "-fx-background-color: transparent;" +
+                "-fx-text-fill: white;" +
+                "-fx-background-radius: 7px;" +
+                "-fx-cursor: hand;"
+        );
+
+        button.setOnMouseEntered(e -> {
+            if (button != studentsButton) {
+                button.setStyle(
+                        "-fx-background-color: rgba(255,255,255,0.12);" +
+                        "-fx-text-fill: white;" +
+                        "-fx-background-radius: 7px;" +
+                        "-fx-cursor: hand;"
+                );
+            }
+        });
+
+        button.setOnMouseExited(e -> {
+            if (button != studentsButton) {
+                button.setStyle(
+                        "-fx-background-color: transparent;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-background-radius: 7px;" +
+                        "-fx-cursor: hand;"
+                );
+            }
+        });
+
+        return button;
+    }
+
+    private void setActive(Button active) {
+        active.setStyle(
+                "-fx-background-color: " + BLUE2 + ";" +
+                "-fx-text-fill: white;" +
+                "-fx-background-radius: 7px;" +
+                "-fx-cursor: hand;"
+        );
+    }
+
+    private ImageView createImageView(
+            String resource,
+            double width,
+            double height) {
+
+        java.io.InputStream stream =
+                ManageStudents.class
+                        .getResourceAsStream(resource);
+
+        if (stream == null) {
+            return new ImageView();
+        }
+
+        Image image = new Image(stream);
+
+        ImageView view = new ImageView(image);
+        view.setFitWidth(width);
+        view.setFitHeight(height);
+        view.setPreserveRatio(true);
+        view.setSmooth(true);
+
+        return view;
+    }
+
+    private void updateCount(
+            Label count,
+            int number) {
+
+        count.setText(number + " student"
+                + (number == 1 ? "" : "s"));
+    }
+
+    private void showMessage(
+            String title,
+            String message) {
 
         Alert alert =
-                new Alert(
-                        Alert.AlertType.CONFIRMATION
-                );
+                new Alert(Alert.AlertType.INFORMATION);
 
-        alert.setTitle(
-                "Delete Student"
-        );
-
-        alert.setHeaderText(
-                "Delete Student?"
-        );
-
-        alert.setContentText(
-                student.getName()
-                        + " will be deleted."
-        );
-
-        alert.showAndWait()
-                .ifPresent(
-                        result -> {
-
-                            if (result ==
-                                    ButtonType.OK) {
-
-                                students.remove(
-                                        student
-                                );
-                            }
-                        }
-                );
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
-
-    // =========================
-    // STUDENT CLASS
-    // =========================
 
     public static class Student {
 
@@ -879,8 +782,7 @@ public class ManageStudents extends Application {
                 String id,
                 String name,
                 String department,
-                String phone
-        ) {
+                String phone) {
 
             this.id = id;
             this.name = name;
@@ -904,11 +806,12 @@ public class ManageStudents extends Application {
             return phone;
         }
 
-        public void setName(
-                String name
-        ) {
-
+        public void setName(String name) {
             this.name = name;
         }
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }
