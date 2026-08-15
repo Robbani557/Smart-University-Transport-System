@@ -15,6 +15,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import data.AppData;
+import model.Route;
+import model.Student;
 
 public class ManageStudents extends Application {
 
@@ -57,12 +60,12 @@ public class ManageStudents extends Application {
 
     private VBox createSidebar(Stage stage) {
         VBox sidebar = new VBox();
-        sidebar.setPrefWidth(230);
-        sidebar.setMinWidth(205);
+        sidebar.setPrefWidth(220);
+        sidebar.setMinWidth(200);
         sidebar.setStyle("-fx-background-color: " + BLUE + ";");
 
         VBox brand = new VBox(4);
-        brand.setPadding(new Insets(20, 18, 18, 18));
+        brand.setPadding(new Insets(18));
         brand.setAlignment(Pos.CENTER_LEFT);
 
         ImageView logo = createImageView("/images/logo.png", 64, 64);
@@ -82,7 +85,7 @@ public class ManageStudents extends Application {
         brand.getChildren().addAll(logo, name, system, admin);
 
         VBox menu = new VBox(5);
-        menu.setPadding(new Insets(10, 10, 12, 10));
+        menu.setPadding(new Insets(8, 10, 10, 10));
 
         Button dashboard = createMenuButton("⌂   Dashboard");
         studentsButton = createMenuButton("♙   Manage Students");
@@ -173,8 +176,8 @@ public class ManageStudents extends Application {
     private HBox createTopBar() {
         HBox topBar = new HBox(14);
         topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setPadding(new Insets(0, 24, 0, 24));
-        topBar.setMinHeight(66);
+        topBar.setPadding(new Insets(0, 20, 0, 20));
+        topBar.setMinHeight(62);
 
         topBar.setStyle(
                 "-fx-background-color: white;" +
@@ -223,8 +226,8 @@ public class ManageStudents extends Application {
     }
 
     private VBox createContent() {
-        VBox content = new VBox(18);
-        content.setPadding(new Insets(24));
+        VBox content = new VBox(16);
+        content.setPadding(new Insets(20));
         content.setFillWidth(true);
 
         HBox heading = new HBox(12);
@@ -294,7 +297,6 @@ public class ManageStudents extends Application {
 
         HBox searchBar = new HBox(10);
         searchBar.setAlignment(Pos.CENTER_LEFT);
-        searchBar.setMinHeight(42);
 
         TextField search = new TextField();
         search.setPromptText(
@@ -316,7 +318,7 @@ public class ManageStudents extends Application {
         Label count = new Label();
         count.setFont(Font.font("Segoe UI", 11));
         count.setTextFill(Color.web(MUTED));
-        count.setMinWidth(125);
+        count.setMinWidth(110);
         count.setAlignment(Pos.CENTER_RIGHT);
 
         createTable();
@@ -333,7 +335,7 @@ public class ManageStudents extends Application {
         searchBar.getChildren().addAll(search, count);
 
         VBox tableCard = new VBox(10);
-        tableCard.setPadding(new Insets(16));
+        tableCard.setPadding(new Insets(14));
         tableCard.setStyle(
                 "-fx-background-color: white;" +
                 "-fx-border-color: " + BORDER + ";" +
@@ -362,7 +364,7 @@ public class ManageStudents extends Application {
         TableColumn<Student, String> id =
                 new TableColumn<>("Student ID");
         id.setCellValueFactory(
-                new PropertyValueFactory<>("id")
+                new PropertyValueFactory<>("studentId")
         );
         id.setMinWidth(110);
 
@@ -380,17 +382,21 @@ public class ManageStudents extends Application {
         );
         department.setMinWidth(130);
 
-        TableColumn<Student, String> phone =
-                new TableColumn<>("Phone");
-        phone.setCellValueFactory(
-                new PropertyValueFactory<>("phone")
+        TableColumn<Student, String> route =
+                new TableColumn<>("Route");
+        route.setCellValueFactory(cell ->
+                new javafx.beans.property.SimpleStringProperty(
+                        cell.getValue().getRoute() == null
+                                ? "Unassigned"
+                                : cell.getValue().getRoute().getRouteName()
+                )
         );
-        phone.setMinWidth(140);
+        route.setMinWidth(140);
 
         TableColumn<Student, Void> action =
                 new TableColumn<>("Actions");
-        action.setMinWidth(130);
-        action.setMaxWidth(150);
+        action.setMinWidth(120);
+        action.setMaxWidth(140);
 
         action.setCellFactory(column ->
                 new TableCell<Student, Void>() {
@@ -458,7 +464,7 @@ public class ManageStudents extends Application {
                 id,
                 name,
                 department,
-                phone,
+                route,
                 action
         );
 
@@ -466,86 +472,59 @@ public class ManageStudents extends Application {
         table.setColumnResizePolicy(
                 TableView.CONSTRAINED_RESIZE_POLICY
         );
-        table.setFixedCellSize(44);
+        table.setFixedCellSize(42);
         table.setPlaceholder(
                 new Label("No students found.")
         );
 
         table.setStyle(
                 "-fx-background-color: white;" +
-                "-fx-border-color: transparent;" +
-                "-fx-font-family: 'Segoe UI';" +
-                "-fx-font-size: 12px;"
+                "-fx-border-color: transparent;"
         );
     }
 
     private void loadStudents() {
         students.clear();
 
-        students.addAll(
-                new Student(
-                        "ST001",
-                        "Mehedi Hasan",
-                        "CSE",
-                        "01700000000"
-                ),
-                new Student(
-                        "ST002",
-                        "Nishan Ahmed",
-                        "ETE",
-                        "01800000000"
-                ),
-                new Student(
-                        "ST003",
-                        "Golam Robbani",
-                        "CSE",
-                        "01770000000"
-                ),
-                new Student(
-                        "ST004",
-                        "Mahbub Hasan",
-                        "BBA",
-                        "01900000000"
-                ),
-                new Student(
-                        "ST005",
-                        "Abdur Rahim",
-                        "EEE",
-                        "01600000000"
-                ),
-                new Student(
-                        "ST006",
-                        "Arafat Islam",
-                        "CSE",
-                        "01780000000"
-                )
-        );
+        for (Student student : AppData.getTransportData().getStudents()) {
+            if (student != null) {
+                students.add(student);
+            }
+        }
     }
 
     private void searchStudent(String keyword) {
-        if (keyword == null ||
-                keyword.trim().isEmpty()) {
-
+        if (keyword == null || keyword.trim().isEmpty()) {
             table.setItems(students);
             return;
         }
 
-        String search =
-                keyword.trim().toLowerCase();
+        String search = keyword.trim().toLowerCase();
 
         ObservableList<Student> result =
                 FXCollections.observableArrayList();
 
         for (Student student : students) {
+            String id = student.getStudentId() == null
+                    ? ""
+                    : student.getStudentId();
 
-            if (student.getId().toLowerCase()
-                    .contains(search)
-                    || student.getName().toLowerCase()
-                    .contains(search)
-                    || student.getDepartment().toLowerCase()
-                    .contains(search)
-                    || student.getPhone().contains(search)) {
+            String name = student.getName() == null
+                    ? ""
+                    : student.getName();
 
+            String department = student.getDepartment() == null
+                    ? ""
+                    : student.getDepartment();
+
+            String route = student.getRoute() == null
+                    ? ""
+                    : student.getRoute().getRouteName();
+
+            if (id.toLowerCase().contains(search)
+                    || name.toLowerCase().contains(search)
+                    || department.toLowerCase().contains(search)
+                    || route.toLowerCase().contains(search)) {
                 result.add(student);
             }
         }
@@ -565,22 +544,31 @@ public class ManageStudents extends Application {
         TextField name = new TextField();
         name.setPromptText("Student Name");
 
-        ComboBox<String> department =
-                new ComboBox<>();
-
+        ComboBox<String> department = new ComboBox<>();
         department.getItems().addAll(
-                "CSE",
-                "EEE",
-                "ETE",
-                "BBA",
-                "CE",
-                "ME"
+                "CSE", "EEE", "ETE", "BBA", "CE", "ME"
         );
         department.setPromptText("Department");
         department.setMaxWidth(Double.MAX_VALUE);
 
-        TextField phone = new TextField();
-        phone.setPromptText("Phone Number");
+        ComboBox<Route> route = new ComboBox<>();
+        route.getItems().addAll(
+                AppData.getTransportData().getRoutes()
+        );
+        route.setPromptText("Route");
+        route.setMaxWidth(Double.MAX_VALUE);
+
+        route.setConverter(new javafx.util.StringConverter<Route>() {
+            @Override
+            public String toString(Route value) {
+                return value == null ? "" : value.getRouteName();
+            }
+
+            @Override
+            public Route fromString(String value) {
+                return AppData.getTransportData().findRoute(value);
+            }
+        });
 
         VBox box = new VBox(8);
         box.setPadding(new Insets(12));
@@ -593,8 +581,8 @@ public class ManageStudents extends Application {
                 name,
                 new Label("Department"),
                 department,
-                new Label("Phone"),
-                phone
+                new Label("Route"),
+                route
         );
 
         dialog.getDialogPane().setContent(box);
@@ -604,15 +592,16 @@ public class ManageStudents extends Application {
         );
 
         dialog.showAndWait().ifPresent(result -> {
-
             if (result != ButtonType.OK) {
                 return;
             }
 
-            if (id.getText().trim().isEmpty()
+            String studentId = id.getText().trim();
+
+            if (studentId.isEmpty()
                     || name.getText().trim().isEmpty()
                     || department.getValue() == null
-                    || phone.getText().trim().isEmpty()) {
+                    || route.getValue() == null) {
 
                 showMessage(
                         "Missing Information",
@@ -621,34 +610,112 @@ public class ManageStudents extends Application {
                 return;
             }
 
-            students.add(
-                    new Student(
-                            id.getText().trim(),
-                            name.getText().trim(),
-                            department.getValue(),
-                            phone.getText().trim()
-                    )
+            for (Student existing :
+                    AppData.getTransportData().getStudents()) {
+
+                if (existing.getStudentId() != null
+                        && existing.getStudentId()
+                                .equalsIgnoreCase(studentId)) {
+
+                    showMessage(
+                            "Duplicate Student ID",
+                            "A student with this ID already exists."
+                    );
+                    return;
+                }
+            }
+
+            Student student = new Student(
+                    studentId,
+                    name.getText().trim(),
+                    department.getValue(),
+                    route.getValue()
             );
 
+            AppData.getTransportData().addStudent(student);
+
+            loadStudents();
             table.setItems(students);
             table.refresh();
         });
     }
 
     private void editStudent(Student student) {
-        TextInputDialog dialog =
-                new TextInputDialog(student.getName());
+        Dialog<ButtonType> dialog = new Dialog<>();
 
         dialog.setTitle("Edit Student");
-        dialog.setHeaderText("Change Student Name");
-        dialog.setContentText("Name:");
+        dialog.setHeaderText(
+                "Edit " + student.getStudentId()
+        );
 
-        dialog.showAndWait().ifPresent(name -> {
+        TextField name = new TextField(student.getName());
 
-            if (!name.trim().isEmpty()) {
-                student.setName(name.trim());
-                table.refresh();
+        ComboBox<String> department = new ComboBox<>();
+        department.getItems().addAll(
+                "CSE", "EEE", "ETE", "BBA", "CE", "ME"
+        );
+        department.setValue(student.getDepartment());
+        department.setMaxWidth(Double.MAX_VALUE);
+
+        ComboBox<Route> route = new ComboBox<>();
+        route.getItems().addAll(
+                AppData.getTransportData().getRoutes()
+        );
+        route.setValue(student.getRoute());
+        route.setMaxWidth(Double.MAX_VALUE);
+
+        route.setConverter(new javafx.util.StringConverter<Route>() {
+            @Override
+            public String toString(Route value) {
+                return value == null ? "" : value.getRouteName();
             }
+
+            @Override
+            public Route fromString(String value) {
+                return AppData.getTransportData().findRoute(value);
+            }
+        });
+
+        VBox box = new VBox(8);
+        box.setPadding(new Insets(12));
+        box.setPrefWidth(360);
+
+        box.getChildren().addAll(
+                new Label("Name"),
+                name,
+                new Label("Department"),
+                department,
+                new Label("Route"),
+                route
+        );
+
+        dialog.getDialogPane().setContent(box);
+        dialog.getDialogPane().getButtonTypes().addAll(
+                ButtonType.CANCEL,
+                ButtonType.OK
+        );
+
+        dialog.showAndWait().ifPresent(result -> {
+            if (result != ButtonType.OK) {
+                return;
+            }
+
+            if (name.getText().trim().isEmpty()
+                    || department.getValue() == null
+                    || route.getValue() == null) {
+
+                showMessage(
+                        "Missing Information",
+                        "Please complete all student fields."
+                );
+                return;
+            }
+
+            student.setName(name.getText().trim());
+            student.setDepartment(department.getValue());
+            student.setRoute(route.getValue());
+
+            table.refresh();
         });
     }
 
@@ -668,6 +735,9 @@ public class ManageStudents extends Application {
 
             if (result == ButtonType.OK) {
                 students.remove(student);
+                AppData.getTransportData()
+                        .getStudents()
+                        .remove(student);
                 table.refresh();
             }
         });
@@ -769,46 +839,6 @@ public class ManageStudents extends Application {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-    }
-
-    public static class Student {
-
-        private String id;
-        private String name;
-        private String department;
-        private String phone;
-
-        public Student(
-                String id,
-                String name,
-                String department,
-                String phone) {
-
-            this.id = id;
-            this.name = name;
-            this.department = department;
-            this.phone = phone;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getDepartment() {
-            return department;
-        }
-
-        public String getPhone() {
-            return phone;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
     }
 
     public static void main(String[] args) {

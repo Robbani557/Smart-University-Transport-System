@@ -15,6 +15,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import data.AppData;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import model.Booking;
 
 public class Bookings extends Application {
 
@@ -29,14 +33,14 @@ public class Bookings extends Application {
     private static final String RED = "#C62828";
     private static final String ORANGE = "#EF6C00";
 
-    private final ObservableList<Booking> bookings =
+    private final ObservableList<AdminBooking> bookings =
             FXCollections.observableArrayList();
 
-    private final TableView<Booking> table = new TableView<>();
+    private final TableView<AdminBooking> table = new TableView<>();
 
     @Override
     public void start(Stage stage) {
-        loadSampleBookings();
+        loadSharedBookings();
 
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: " + LIGHT + ";");
@@ -409,25 +413,40 @@ public class Bookings extends Application {
     private HBox createSummary() {
         HBox summary = new HBox(12);
 
+        int total = bookings.size();
+        int confirmed = 0;
+        int pending = 0;
+        int cancelled = 0;
+
+        for (AdminBooking booking : bookings) {
+            if ("Confirmed".equalsIgnoreCase(booking.getStatus())) {
+                confirmed++;
+            } else if ("Pending".equalsIgnoreCase(booking.getStatus())) {
+                pending++;
+            } else if ("Cancelled".equalsIgnoreCase(booking.getStatus())) {
+                cancelled++;
+            }
+        }
+
         summary.getChildren().addAll(
                 createSummaryCard(
                         "Total Bookings",
-                        "1,243",
+                        String.valueOf(total),
                         BLUE
                 ),
                 createSummaryCard(
                         "Confirmed",
-                        "1,102",
+                        String.valueOf(confirmed),
                         GREEN
                 ),
                 createSummaryCard(
                         "Pending",
-                        "86",
+                        String.valueOf(pending),
                         ORANGE
                 ),
                 createSummaryCard(
                         "Cancelled",
-                        "55",
+                        String.valueOf(cancelled),
                         RED
                 )
         );
@@ -478,56 +497,56 @@ public class Bookings extends Application {
     private void createTable() {
         table.getColumns().clear();
 
-        TableColumn<Booking, String> id =
+        TableColumn<AdminBooking, String> id =
                 new TableColumn<>("Booking ID");
         id.setCellValueFactory(
                 new PropertyValueFactory<>("id")
         );
 
-        TableColumn<Booking, String> student =
+        TableColumn<AdminBooking, String> student =
                 new TableColumn<>("Student");
         student.setCellValueFactory(
                 new PropertyValueFactory<>("student")
         );
 
-        TableColumn<Booking, String> route =
+        TableColumn<AdminBooking, String> route =
                 new TableColumn<>("Route");
         route.setCellValueFactory(
                 new PropertyValueFactory<>("route")
         );
 
-        TableColumn<Booking, String> bus =
+        TableColumn<AdminBooking, String> bus =
                 new TableColumn<>("Bus");
         bus.setCellValueFactory(
                 new PropertyValueFactory<>("bus")
         );
 
-        TableColumn<Booking, String> date =
+        TableColumn<AdminBooking, String> date =
                 new TableColumn<>("Date");
         date.setCellValueFactory(
                 new PropertyValueFactory<>("date")
         );
 
-        TableColumn<Booking, String> time =
+        TableColumn<AdminBooking, String> time =
                 new TableColumn<>("Time");
         time.setCellValueFactory(
                 new PropertyValueFactory<>("time")
         );
 
-        TableColumn<Booking, String> status =
+        TableColumn<AdminBooking, String> status =
                 new TableColumn<>("Status");
         status.setCellValueFactory(
                 new PropertyValueFactory<>("status")
         );
 
-        TableColumn<Booking, Void> actions =
+        TableColumn<AdminBooking, Void> actions =
                 new TableColumn<>("Actions");
 
         actions.setMinWidth(130);
         actions.setMaxWidth(150);
 
         actions.setCellFactory(column ->
-                new TableCell<Booking, Void>() {
+                new TableCell<AdminBooking, Void>() {
 
                     private final Button view =
                             new Button("View");
@@ -566,7 +585,7 @@ public class Bookings extends Application {
                         );
 
                         view.setOnAction(e -> {
-                            Booking item =
+                            AdminBooking item =
                                     getTableView()
                                             .getItems()
                                             .get(getIndex());
@@ -575,7 +594,7 @@ public class Bookings extends Application {
                         });
 
                         cancel.setOnAction(e -> {
-                            Booking item =
+                            AdminBooking item =
                                     getTableView()
                                             .getItems()
                                             .get(getIndex());
@@ -623,65 +642,41 @@ public class Bookings extends Application {
         );
     }
 
-    private void loadSampleBookings() {
+    private void loadSharedBookings() {
         bookings.clear();
 
-        bookings.addAll(
-                new Booking(
-                        "BK-1001",
-                        "Mehedi Hasan",
-                        "Mirpur",
-                        "BUS-101",
-                        "15 Aug 2026",
-                        "07:00 AM",
-                        "Confirmed"
-                ),
-                new Booking(
-                        "BK-1002",
-                        "Nishan Ahmed",
-                        "Uttara",
-                        "BUS-104",
-                        "15 Aug 2026",
-                        "08:00 AM",
-                        "Confirmed"
-                ),
-                new Booking(
-                        "BK-1003",
-                        "Golam Robbani",
-                        "Dhanmondi",
-                        "BUS-108",
-                        "15 Aug 2026",
-                        "09:00 AM",
-                        "Pending"
-                ),
-                new Booking(
-                        "BK-1004",
-                        "Mahbub Hasan",
-                        "Mohammadpur",
-                        "BUS-112",
-                        "15 Aug 2026",
-                        "10:30 AM",
-                        "Confirmed"
-                ),
-                new Booking(
-                        "BK-1005",
-                        "Abdur Rahim",
-                        "Badda",
-                        "BUS-115",
-                        "15 Aug 2026",
-                        "12:00 PM",
-                        "Cancelled"
-                ),
-                new Booking(
-                        "BK-1006",
-                        "Arafat Islam",
-                        "Mirpur",
-                        "BUS-101",
-                        "15 Aug 2026",
-                        "03:00 PM",
-                        "Confirmed"
-                )
-        );
+        int bookingNumber = 1001;
+
+        for (Booking source : AppData.getTransportData().getBookings()) {
+            if (source == null) {
+                continue;
+            }
+
+            String studentName =
+                    source.getStudent() != null
+                            ? source.getStudent().getName()
+                            : "Unknown Student";
+
+            String routeName =
+                    source.getRoute() != null
+                            ? source.getRoute().getRouteName()
+                            : "Unknown Route";
+
+            String bus = "Seat " + source.getSeatNumber();
+
+            bookings.add(
+                    new AdminBooking(
+                            "BK-" + bookingNumber++,
+                            studentName,
+                            routeName,
+                            bus,
+                            source.getTravelDate(),
+                            source.getTravelTime(),
+                            source.getStatus(),
+                            source
+                    )
+            );
+        }
     }
 
     private void filterBookings(
@@ -694,10 +689,10 @@ public class Bookings extends Application {
                         ? ""
                         : keyword.trim().toLowerCase();
 
-        ObservableList<Booking> result =
+        ObservableList<AdminBooking> result =
                 FXCollections.observableArrayList();
 
-        for (Booking booking : bookings) {
+        for (AdminBooking booking : bookings) {
 
             boolean matchesSearch =
                     search.isEmpty()
@@ -819,24 +814,16 @@ public class Bookings extends Application {
                 return;
             }
 
-            bookings.add(
-                    new Booking(
-                            id.getText().trim(),
-                            student.getText().trim(),
-                            route.getText().trim(),
-                            bus.getText().trim(),
-                            date.getText().trim(),
-                            time.getText().trim(),
-                            status.getValue()
-                    )
+            showMessage(
+                    "Admin Booking",
+                    "Manual booking creation is not connected to the shared "
+                            + "student booking model yet. Student bookings "
+                            + "will appear here automatically."
             );
-
-            table.setItems(bookings);
-            table.refresh();
         });
     }
 
-    private void viewBooking(Booking booking) {
+    private void viewBooking(AdminBooking booking) {
         Alert alert = new Alert(
                 Alert.AlertType.INFORMATION
         );
@@ -858,7 +845,7 @@ public class Bookings extends Application {
         alert.showAndWait();
     }
 
-    private void cancelBooking(Booking booking) {
+    private void cancelBooking(AdminBooking booking) {
         if ("Cancelled".equals(booking.getStatus())) {
             showMessage(
                     "Booking",
@@ -886,6 +873,11 @@ public class Bookings extends Application {
 
             if (result == ButtonType.OK) {
                 booking.setStatus("Cancelled");
+
+                if (booking.getSourceBooking() != null) {
+                    booking.getSourceBooking().cancelBooking();
+                }
+
                 table.refresh();
             }
         });
@@ -1000,7 +992,7 @@ public class Bookings extends Application {
         alert.showAndWait();
     }
 
-    public static class Booking {
+    public static class AdminBooking {
 
         private final String id;
         private final String student;
@@ -1009,15 +1001,17 @@ public class Bookings extends Application {
         private final String date;
         private final String time;
         private String status;
+        private final Booking sourceBooking;
 
-        public Booking(
+        public AdminBooking(
                 String id,
                 String student,
                 String route,
                 String bus,
                 String date,
                 String time,
-                String status) {
+                String status,
+                Booking sourceBooking) {
 
             this.id = id;
             this.student = student;
@@ -1026,6 +1020,7 @@ public class Bookings extends Application {
             this.date = date;
             this.time = time;
             this.status = status;
+            this.sourceBooking = sourceBooking;
         }
 
         public String getId() {
@@ -1058,6 +1053,10 @@ public class Bookings extends Application {
 
         public void setStatus(String status) {
             this.status = status;
+        }
+
+        public Booking getSourceBooking() {
+            return sourceBooking;
         }
     }
 

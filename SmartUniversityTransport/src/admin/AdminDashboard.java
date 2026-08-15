@@ -1,5 +1,9 @@
 package admin;
 
+import data.AppData;
+import model.Booking;
+import model.Route;
+
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -108,20 +112,47 @@ public class AdminDashboard extends Application {
         HBox cards = new HBox(14);
         cards.setFillHeight(true);
 
+        data.TransportData data = AppData.getTransportData();
+
+        int totalStudents = data.getStudents().size();
+        int totalBuses = data.getBuses().size();
+        int totalBookings = data.getBookings().size();
+
+        int totalCapacity = 0;
+        for (Route route : data.getRoutes()) {
+            totalCapacity += Math.max(0, route.getBusCapacity());
+        }
+
+        int confirmedBookings = 0;
+        for (Booking booking : data.getBookings()) {
+            if (booking.isConfirmed()) {
+                confirmedBookings++;
+            }
+        }
+
+        int availableSeats = Math.max(
+                0,
+                totalCapacity - confirmedBookings
+        );
+
         VBox studentsCard = createStatCard(
-                "♙", "Total Students", "2,548",
-                "+12 this week", BLUE2);
+                "♙", "Total Students",
+                String.valueOf(totalStudents),
+                "Registered students", BLUE2);
 
         VBox busesCard = createStatCard(
-                "▣", "Total Buses", "68",
-                "8 on route", GREEN);
+                "▣", "Total Buses",
+                String.valueOf(totalBuses),
+                "Available in transport data", GREEN);
 
         VBox bookingsCard = createStatCard(
-                "▤", "Today's Bookings", "1,243",
-                "+8% from yesterday", ORANGE);
+                "▤", "Total Bookings",
+                String.valueOf(totalBookings),
+                confirmedBookings + " confirmed", ORANGE);
 
         VBox seatsCard = createStatCard(
-                "♿", "Available Seats", "862",
+                "♿", "Available Seats",
+                String.valueOf(availableSeats),
                 "Across all routes", PURPLE);
 
         cards.getChildren().addAll(
@@ -253,17 +284,33 @@ public class AdminDashboard extends Application {
         });
 
         buses.setOnAction(e -> {
-            ManageBuses page = new ManageBuses();
-            page.start(stage);
+            setActiveMenuButton(buses);
+
+            SwingUtilities.invokeLater(() -> {
+                transport.ui.BusDetailsPanel busWindow =
+                        new transport.ui.BusDetailsPanel(new data.TransportData());
+                busWindow.setVisible(true);
+            });
         });
 
-        allocation.setOnAction(e -> showMessage(
-                "Bus Allocation",
-                "Bus Allocation is currently disabled while the allocation module is being integrated."));
+        allocation.setOnAction(e -> {
+            setActiveMenuButton(allocation);
+
+            SwingUtilities.invokeLater(() -> {
+                BusAllocation allocationWindow =
+                        new BusAllocation(AppData.getTransportData());
+                allocationWindow.setVisible(true);
+            });
+        });
 
         schedules.setOnAction(e -> {
-            Schedules page = new Schedules();
-            page.start(stage);
+            setActiveMenuButton(schedules);
+
+            SwingUtilities.invokeLater(() -> {
+                transport.ui.TimePanel scheduleWindow =
+                        new transport.ui.TimePanel(new data.TransportData());
+                scheduleWindow.setVisible(true);
+            });
         });
 
         bookings.setOnAction(e -> {
@@ -277,6 +324,7 @@ public class AdminDashboard extends Application {
         });
 
         settings.setOnAction(e -> {
+            setActiveMenuButton(settings);
             Settings page = new Settings();
             page.start(stage);
         });
@@ -528,9 +576,9 @@ public class AdminDashboard extends Application {
         allocated.setCellValueFactory(
                 new PropertyValueFactory<>("allocated"));
 
-        TableColumn<RouteData, String> difference =
+        TableColumn<RouteData, String> differenceColumn =
                 new TableColumn<>("Difference");
-        difference.setCellValueFactory(
+        differenceColumn.setCellValueFactory(
                 new PropertyValueFactory<>("difference"));
 
         TableColumn<RouteData, String> status =
@@ -543,28 +591,53 @@ public class AdminDashboard extends Application {
                 bookings,
                 required,
                 allocated,
-                difference,
+                differenceColumn,
                 status
         );
 
-        table.getItems().addAll(
-                new RouteData(
-                        "Mirpur", "417", "9", "9", "0", "✓ Good"),
+        data.TransportData data = AppData.getTransportData();
 
-                new RouteData(
-                        "Dhanmondi", "371", "8", "10", "+2", "✓ Good"),
+        for (Route routeData : data.getRoutes()) {
+            int routeBookings = 0;
 
-                new RouteData(
-                        "Mohammadpur", "289", "6", "6", "0", "✓ Good"),
+            for (Booking booking : data.getBookings()) {
+                if (booking.getRoute() == routeData) {
+                    routeBookings++;
+                } else if (booking.getRoute() != null
+                        && booking.getRoute().getRouteName() != null
+                        && booking.getRoute().getRouteName()
+                                .equalsIgnoreCase(routeData.getRouteName())) {
+                    routeBookings++;
+                }
+            }
 
-                new RouteData(
-                        "Uttara", "222", "5", "4", "-1",
-                        "⚠ Need 1 More"),
+            int requiredBuses = routeData.getRequiredBuses();
+            int allocatedBuses = routeData.getAllocatedBuses();
+            int difference = allocatedBuses - requiredBuses;
 
-                new RouteData(
-                        "Badda", "180", "4", "3", "-1",
-                        "⚠ Need 1 More")
-        );
+            String differenceText =
+                    difference > 0
+                            ? "+" + difference
+                            : String.valueOf(difference);
+
+            String statusText =
+                    difference < 0
+                            ? "⚠ Need " + Math.abs(difference) + " More"
+                            : difference > 0
+                                    ? "✓ Extra " + difference
+                                    : "✓ Good";
+
+            table.getItems().add(
+                    new RouteData(
+                            routeData.getRouteName(),
+                            String.valueOf(routeBookings),
+                            String.valueOf(requiredBuses),
+                            String.valueOf(allocatedBuses),
+                            differenceText,
+                            statusText
+                    )
+            );
+        }
 
         return table;
     }

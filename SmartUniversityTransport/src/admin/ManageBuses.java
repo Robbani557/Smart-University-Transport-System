@@ -1,483 +1,161 @@
 package admin;
 
+import data.AppData;
+import data.TransportData;
+import model.Bus;
+
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
-/**
- *
- * @author Golam Robbani
- */
 public class ManageBuses extends Application {
-
-    private TableView<Bus> table =
-            new TableView<Bus>();
-
-    private ObservableList<Bus> busList =
-            FXCollections.observableArrayList();
 
     private static final String BLUE = "#1565C0";
     private static final String BLUE2 = "#1976D2";
     private static final String LIGHT = "#F5F7FA";
     private static final String BORDER = "#E0E0E0";
     private static final String DARK = "#212121";
+    private static final String MUTED = "#667085";
     private static final String RED = "#C62828";
-    private static final String GREEN = "#2E7D32";
-    private static final String ORANGE = "#EF6C00";
+
+    private final TableView<Bus> table = new TableView<>();
+    private final ObservableList<Bus> buses =
+            FXCollections.observableArrayList();
+
+    private final TransportData data =
+            AppData.getTransportData();
+
+    private Stage currentStage;
 
     @Override
     public void start(Stage stage) {
+        currentStage = stage;
 
-        BorderPane root =
-                new BorderPane();
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + LIGHT + ";");
 
-        root.setStyle(
-                "-fx-background-color: " +
-                LIGHT + ";"
-        );
+        root.setLeft(createSidebar(stage));
+        root.setTop(createTopBar());
+        root.setCenter(createContent());
 
-        // ==========================================
-        // SIDEBAR
-        // ==========================================
-
-        VBox sidebar =
-                createSidebar(stage);
-
-        root.setLeft(sidebar);
-
-        // ==========================================
-        // TOP BAR
-        // ==========================================
-
-        HBox topBar =
-                createTopBar();
-
-        root.setTop(topBar);
-
-        // ==========================================
-        // MAIN CONTENT
-        // ==========================================
-
-        VBox content =
-                new VBox(18);
-
-        content.setPadding(
-                new Insets(24)
-        );
-        content.setFillWidth(true);
-
-        // ==========================================
-        // TITLE AREA
-        // ==========================================
-
-        HBox heading =
-                new HBox();
-
-        heading.setAlignment(
-                Pos.CENTER_LEFT
-        );
-
-        Label title =
-                new Label("Manage Buses");
-
-        title.setFont(
-                Font.font(
-                        "Segoe UI",
-                        FontWeight.BOLD,
-                        24
-                )
-        );
-
-        title.setTextFill(
-                Color.web(DARK)
-        );
-
-        Region headingSpacer =
-                new Region();
-
-        HBox.setHgrow(
-                headingSpacer,
-                Priority.ALWAYS
-        );
-
-        Button addBus =
-                new Button("+ Add Bus");
-
-        addBus.setPrefWidth(135);
-        addBus.setPrefHeight(40);
-
-        addBus.setTextFill(
-                Color.WHITE
-        );
-
-        addBus.setFont(
-                Font.font(
-                        "Segoe UI",
-                        FontWeight.BOLD,
-                        13
-                )
-        );
-
-        addBus.setStyle(
-                "-fx-background-color: " +
-                BLUE + ";" +
-                "-fx-background-radius: 6px;" +
-                "-fx-cursor: hand;"
-        );
-
-        addBus.setOnAction(
-                e -> showAddBusDialog()
-        );
-
-        heading.getChildren().addAll(
-                title,
-                headingSpacer,
-                addBus
-        );
-
-        // ==========================================
-        // SEARCH
-        // ==========================================
-
-        TextField searchField =
-                new TextField();
-
-        searchField.setPromptText(
-                "Search bus by ID, number or type..."
-        );
-
-        searchField.setPrefHeight(40);
-        searchField.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(searchField, Priority.ALWAYS);
-
-        searchField.setStyle(
-                "-fx-background-color: white;" +
-                "-fx-border-color: " +
-                BORDER + ";" +
-                "-fx-border-radius: 6px;" +
-                "-fx-background-radius: 6px;"
-        );
-
-        searchField.textProperty().addListener(
-                (observable, oldValue, newValue) ->
-                        searchBus(newValue)
-        );
-
-        // ==========================================
-        // SEARCH
-        // ==========================================
-
-        HBox searchRow = new HBox(10);
-        searchRow.setAlignment(Pos.CENTER_LEFT);
-
-        Label searchIcon = new Label("⌕");
-        searchIcon.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
-        searchIcon.setTextFill(Color.web(BLUE));
-
-        searchRow.getChildren().addAll(searchIcon, searchField);
-
-        // ==========================================
-        // TABLE
-        // ==========================================
-
-        createTable();
-
-        loadBuses();
-
-        VBox tableBox =
-                new VBox();
-
-        tableBox.setPadding(
-                new Insets(16)
-        );
-
-        tableBox.setStyle(
-                "-fx-background-color: white;" +
-                "-fx-border-color: " +
-                BORDER + ";" +
-                "-fx-border-radius: 8px;" +
-                "-fx-background-radius: 8px;"
-        );
-
-        tableBox.getChildren().add(
-                table
-        );
-
-        VBox.setVgrow(table, Priority.ALWAYS);
-
-        VBox.setVgrow(
-                tableBox,
-                Priority.ALWAYS
-        );
-
-        content.getChildren().addAll(
-                heading,
-                searchRow,
-                tableBox
-        );
-
-        VBox.setVgrow(
-                tableBox,
-                Priority.ALWAYS
-        );
-
-        root.setCenter(content);
-
-        // ==========================================
-        // SCENE
-        // ==========================================
-
-        Scene scene =
-                new Scene(
-                        root,
-                        1200,
-                        760
-                );
+        Scene scene = new Scene(root, 1200, 760);
 
         stage.setTitle(
                 "Smart University Transport System - Manage Buses"
         );
         stage.setMinWidth(900);
         stage.setMinHeight(600);
-
         stage.setScene(scene);
-
         stage.show();
     }
 
-    // ==========================================
-    // MAIN METHOD
-    // ==========================================
-
-    public static void main(String[] args) {
-
-        launch(args);
-
-    }
-
-    // ==========================================
-    // SIDEBAR
-    // ==========================================
-
     private VBox createSidebar(Stage stage) {
+        VBox sidebar = new VBox();
+        sidebar.setPrefWidth(220);
+        sidebar.setMinWidth(200);
+        sidebar.setStyle("-fx-background-color: " + BLUE + ";");
 
-        VBox sidebar =
-                new VBox();
-
-        sidebar.setPrefWidth(230);
-        sidebar.setMinWidth(205);
-
-        sidebar.setStyle(
-                "-fx-background-color: " +
-                BLUE + ";"
-        );
+        VBox brand = new VBox(4);
+        brand.setPadding(new Insets(18));
+        brand.setAlignment(Pos.CENTER_LEFT);
 
         ImageView logo =
                 createImageView("/images/logo.png", 64, 64);
 
-        Label brandName =
-                new Label("Smart University");
+        Label name = new Label("Smart University");
+        name.setTextFill(Color.WHITE);
+        name.setFont(Font.font(
+                "Segoe UI",
+                FontWeight.BOLD,
+                15
+        ));
 
-        brandName.setTextFill(Color.WHITE);
-        brandName.setFont(
-                Font.font(
-                        "Segoe UI",
-                        FontWeight.BOLD,
-                        15
-                )
+        Label system = new Label("Transport System");
+        system.setTextFill(Color.web("#DCEBFF"));
+        system.setFont(Font.font("Segoe UI", 10));
+
+        Label admin = new Label("ADMIN PANEL");
+        admin.setTextFill(Color.web("#BBD6F7"));
+        admin.setFont(Font.font(
+                "Segoe UI",
+                FontWeight.BOLD,
+                10
+        ));
+
+        brand.getChildren().addAll(
+                logo, name, system, admin
         );
 
-        Label systemName =
-                new Label("Transport System");
-
-        systemName.setTextFill(
-                Color.web("#DCEBFF")
-        );
-
-        systemName.setFont(
-                Font.font(
-                        "Segoe UI",
-                        10
-                )
-        );
-
-        Label admin =
-                new Label("ADMIN PANEL");
-
-        admin.setTextFill(
-                Color.WHITE
-        );
-
-        admin.setFont(
-                Font.font(
-                        "Segoe UI",
-                        10
-                )
-        );
-
-        VBox logoBox =
-                new VBox(
-                        4,
-                        logo,
-                        brandName,
-                        systemName,
-                        admin
-                );
-
-        logoBox.setPadding(
-                new Insets(20, 18, 18, 18)
-        );
-
-        VBox menu =
-                new VBox(5);
-
-        menu.setPadding(
-                new Insets(10, 10, 12, 10)
-        );
+        VBox menu = new VBox(5);
+        menu.setPadding(new Insets(8, 10, 10, 10));
 
         Button dashboard =
-                createMenuButton(
-                        "⌂   Dashboard"
-                );
-
+                createMenuButton("⌂   Dashboard");
         Button students =
-                createMenuButton(
-                        "♙   Manage Students"
-                );
-
+                createMenuButton("♙   Manage Students");
         Button routes =
-                createMenuButton(
-                        "⌁   Manage Routes"
-                );
-
-        Button buses =
-                createMenuButton(
-                        "▣   Manage Buses"
-                );
-
+                createMenuButton("⌁   Manage Routes");
+        Button busesButton =
+                createMenuButton("▣   Manage Buses");
         Button allocation =
-                createMenuButton(
-                        "⇄   Bus Allocation"
-                );
-
+                createMenuButton("⇄   Bus Allocation");
         Button schedules =
-                createMenuButton(
-                        "◷   Schedules"
-                );
-
+                createMenuButton("◷   Schedules");
         Button bookings =
-                createMenuButton(
-                        "▤   Bookings"
-                );
-
+                createMenuButton("▤   Bookings");
         Button reports =
-                createMenuButton(
-                        "▥   Reports"
-                );
-
+                createMenuButton("▥   Reports");
         Button settings =
-                createMenuButton(
-                        "⚙   Settings"
-                );
+                createMenuButton("⚙   Settings");
 
-        // Active button
-        buses.setStyle(
-                "-fx-background-color: " +
-                BLUE2 + ";" +
-                "-fx-background-radius: 6px;" +
-                "-fx-text-fill: white;" +
-                "-fx-cursor: hand;"
-        );
+        setActive(busesButton);
 
-        // ==========================================
-        // NAVIGATION
-        // ==========================================
+        dashboard.setOnAction(e ->
+                new AdminDashboard().start(stage));
 
-        dashboard.setOnAction(e -> {
+        students.setOnAction(e ->
+                new ManageStudents().start(stage));
 
-            new AdminDashboard().start(stage);
+        routes.setOnAction(e ->
+                new ManageRoutes().start(stage));
 
-        });
+        busesButton.setOnAction(e ->
+                setActive(busesButton));
 
-        students.setOnAction(e -> {
+        allocation.setOnAction(e -> showMessage(
+                "Bus Allocation",
+                "Bus Allocation page will open here."
+        ));
 
-            ManageStudents page =
-                    new ManageStudents();
+        schedules.setOnAction(e ->
+                new Schedules().start(stage));
 
-            page.start(stage);
+        bookings.setOnAction(e ->
+                new Bookings().start(stage));
 
-        });
+        reports.setOnAction(e ->
+                new Reports().start(stage));
 
-        routes.setOnAction(e -> {
-
-            ManageRoutes page =
-                    new ManageRoutes();
-
-            page.start(stage);
-
-        });
-
-        buses.setOnAction(e -> {
-
-            // Current page - keep this page open
-
-        });
-
-        allocation.setOnAction(e -> {
-
-            showMessage(
-                    "Bus Allocation",
-                    "Bus Allocation page will open here."
-            );
-
-        });
-
-            schedules.setOnAction(e -> {
-                new Schedules().start(stage);
-            });
-
-        bookings.setOnAction(e -> {
-            new Bookings().start(stage);
-        });
-
-        reports.setOnAction(e -> {
-            new Reports().start(stage);
-        });
-
-        settings.setOnAction(e -> {
-            new Settings().start(stage);
-        });
+        settings.setOnAction(e ->
+                new Settings().start(stage));
 
         menu.getChildren().addAll(
                 dashboard,
                 students,
                 routes,
-                buses,
+                busesButton,
                 allocation,
                 schedules,
                 bookings,
@@ -485,28 +163,17 @@ public class ManageBuses extends Application {
                 settings
         );
 
-        Region spacer =
-                new Region();
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        VBox.setVgrow(
-                spacer,
-                Priority.ALWAYS
-        );
-
-        Button logout =
-                createMenuButton(
-                        "⇥   Logout"
-                );
-
+        Button logout = createMenuButton("⇥   Logout");
         logout.setOnAction(e -> {
-
             Alert alert = new Alert(
                     Alert.AlertType.CONFIRMATION,
                     "Are you sure you want to log out?",
                     ButtonType.YES,
                     ButtonType.NO
             );
-
             alert.setTitle("Logout");
             alert.setHeaderText(null);
 
@@ -514,11 +181,10 @@ public class ManageBuses extends Application {
                     == ButtonType.YES) {
                 stage.close();
             }
-
         });
 
         sidebar.getChildren().addAll(
-                logoBox,
+                brand,
                 menu,
                 spacer,
                 logout
@@ -527,235 +193,239 @@ public class ManageBuses extends Application {
         return sidebar;
     }
 
-    // ==========================================
-    // MENU BUTTON
-    // ==========================================
-
-    private Button createMenuButton(
-            String text
-    ) {
-
-        Button button =
-                new Button(text);
-
-        button.setMaxWidth(
-                Double.MAX_VALUE
-        );
-
-        button.setPrefHeight(42);
-        button.setMinHeight(42);
-
-        button.setAlignment(
-                Pos.CENTER_LEFT
-        );
-
-        button.setPadding(
-                new Insets(10)
-        );
-
-        button.setTextFill(
-                Color.WHITE
-        );
-
-        button.setFont(
-                Font.font(
-                        "Segoe UI",
-                        12
-                )
-        );
-
-        button.setStyle(
-                "-fx-background-color: transparent;" +
-                "-fx-text-fill: white;" +
-                "-fx-background-radius: 7px;" +
-                "-fx-cursor: hand;"
-        );
-
-        button.setOnMouseEntered(e -> {
-            if (!button.getText().contains("Manage Buses")) {
-                button.setStyle(
-                        "-fx-background-color: rgba(255,255,255,0.12);" +
-                        "-fx-text-fill: white;" +
-                        "-fx-background-radius: 7px;" +
-                        "-fx-cursor: hand;"
-                );
-            }
-        });
-
-        button.setOnMouseExited(e -> {
-            if (!button.getText().contains("Manage Buses")) {
-                button.setStyle(
-                        "-fx-background-color: transparent;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-background-radius: 7px;" +
-                        "-fx-cursor: hand;"
-                );
-            }
-        });
-
-        return button;
-    }
-
-    // ==========================================
-    // TOP BAR
-    // ==========================================
-
     private HBox createTopBar() {
-
-        HBox topBar =
-                new HBox();
-
-        topBar.setAlignment(
-                Pos.CENTER_LEFT
-        );
-
-        topBar.setPadding(
-                new Insets(
-                        0,
-                        24,
-                        0,
-                        24
-                )
-        );
-
-        topBar.setPrefHeight(66);
+        HBox topBar = new HBox(14);
+        topBar.setAlignment(Pos.CENTER_LEFT);
+        topBar.setPadding(new Insets(0, 20, 0, 20));
+        topBar.setMinHeight(62);
 
         topBar.setStyle(
                 "-fx-background-color: white;" +
-                "-fx-border-color: " +
-                BORDER + ";"
+                "-fx-border-color: " + BORDER + ";" +
+                "-fx-border-width: 0 0 1 0;"
         );
 
-        Label menu =
-                new Label("☰");
+        Label menuIcon = new Label("☰");
+        menuIcon.setFont(Font.font("Segoe UI", 20));
+        menuIcon.setTextFill(Color.web(DARK));
 
-        menu.setFont(
-                Font.font(
-                        "Segoe UI",
-                        20
-                )
-        );
+        Label page = new Label("Manage Buses");
+        page.setFont(Font.font(
+                "Segoe UI",
+                FontWeight.BOLD,
+                14
+        ));
+        page.setTextFill(Color.web(DARK));
 
-        Region spacer =
-                new Region();
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox.setHgrow(
-                spacer,
-                Priority.ALWAYS
-        );
+        Label notification = new Label("♧");
+        notification.setFont(Font.font("Segoe UI", 20));
+        notification.setTextFill(Color.web(BLUE));
 
-        Label notification =
-                new Label("♧");
+        VBox userBox = new VBox(1);
+        userBox.setAlignment(Pos.CENTER_RIGHT);
 
-        notification.setFont(
-                Font.font(
-                        "Segoe UI",
-                        19
-                )
-        );
+        Label user = new Label("Admin User");
+        user.setFont(Font.font(
+                "Segoe UI",
+                FontWeight.BOLD,
+                11
+        ));
+        user.setTextFill(Color.web(DARK));
 
-        Label user =
-                new Label(
-                        "Admin User\nSuper Admin"
-                );
+        Label role = new Label("Super Admin");
+        role.setFont(Font.font("Segoe UI", 10));
+        role.setTextFill(Color.web(MUTED));
 
-        user.setFont(
-                Font.font(
-                        "Segoe UI",
-                        FontWeight.BOLD,
-                        11
-                )
-        );
+        userBox.getChildren().addAll(user, role);
 
         topBar.getChildren().addAll(
-                menu,
+                menuIcon,
+                page,
                 spacer,
                 notification,
-                user
+                userBox
         );
 
         return topBar;
     }
 
-    // ==========================================
-    // CREATE TABLE
-    // ==========================================
+    private VBox createContent() {
+        VBox content = new VBox(16);
+        content.setPadding(new Insets(20));
+        content.setFillWidth(true);
+
+        HBox heading = new HBox(12);
+        heading.setAlignment(Pos.CENTER_LEFT);
+
+        VBox titleBox = new VBox(3);
+
+        Label title = new Label("Manage Buses");
+        title.setFont(Font.font(
+                "Segoe UI",
+                FontWeight.BOLD,
+                24
+        ));
+        title.setTextFill(Color.web(DARK));
+
+        Label subtitle = new Label(
+                "Add, search, edit and remove buses"
+        );
+        subtitle.setFont(Font.font("Segoe UI", 12));
+        subtitle.setTextFill(Color.web(MUTED));
+
+        titleBox.getChildren().addAll(
+                title,
+                subtitle
+        );
+
+        Region headingSpacer = new Region();
+        HBox.setHgrow(
+                headingSpacer,
+                Priority.ALWAYS
+        );
+
+        Button addBus = new Button("+  Add Bus");
+        addBus.setPrefHeight(40);
+        addBus.setMinWidth(125);
+        addBus.setFont(Font.font(
+                "Segoe UI",
+                FontWeight.BOLD,
+                13
+        ));
+        addBus.setTextFill(Color.WHITE);
+        addBus.setCursor(javafx.scene.Cursor.HAND);
+
+        setPrimaryButtonStyle(addBus);
+        addBus.setOnAction(e -> addBus());
+
+        heading.getChildren().addAll(
+                titleBox,
+                headingSpacer,
+                addBus
+        );
+
+        HBox searchBar = new HBox(10);
+        searchBar.setAlignment(Pos.CENTER_LEFT);
+
+        TextField search = new TextField();
+        search.setPromptText(
+                "Search by bus ID, number or driver..."
+        );
+        search.setPrefHeight(40);
+        search.setMaxWidth(Double.MAX_VALUE);
+
+        search.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-border-color: " + BORDER + ";" +
+                "-fx-border-radius: 7px;" +
+                "-fx-background-radius: 7px;" +
+                "-fx-padding: 8 12 8 12;"
+        );
+
+        HBox.setHgrow(search, Priority.ALWAYS);
+
+        Label count = new Label();
+        count.setMinWidth(100);
+        count.setAlignment(Pos.CENTER_RIGHT);
+        count.setFont(Font.font("Segoe UI", 11));
+        count.setTextFill(Color.web(MUTED));
+
+        createTable();
+        loadBuses();
+        updateCount(count, buses.size());
+
+        search.textProperty().addListener(
+                (obs, oldValue, newValue) -> {
+                    searchBus(newValue);
+                    updateCount(
+                            count,
+                            table.getItems().size()
+                    );
+                }
+        );
+
+        searchBar.getChildren().addAll(
+                search,
+                count
+        );
+
+        VBox tableCard = new VBox(10);
+        tableCard.setPadding(new Insets(14));
+
+        tableCard.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-border-color: " + BORDER + ";" +
+                "-fx-border-radius: 10px;" +
+                "-fx-background-radius: 10px;"
+        );
+
+        tableCard.getChildren().add(table);
+        VBox.setVgrow(
+                table,
+                Priority.ALWAYS
+        );
+        VBox.setVgrow(
+                tableCard,
+                Priority.ALWAYS
+        );
+
+        content.getChildren().addAll(
+                heading,
+                searchBar,
+                tableCard
+        );
+
+        return content;
+    }
 
     private void createTable() {
+        table.getColumns().clear();
 
         TableColumn<Bus, String> busId =
-                new TableColumn<Bus, String>(
-                        "Bus ID"
-                );
-
+                new TableColumn<>("Bus ID");
         busId.setCellValueFactory(
-                new PropertyValueFactory<Bus, String>(
-                        "busId"
-                )
+                new PropertyValueFactory<>("busId")
         );
+        busId.setMinWidth(90);
 
         TableColumn<Bus, String> busNumber =
-                new TableColumn<Bus, String>(
-                        "Bus Number"
-                );
-
+                new TableColumn<>("Bus Number");
         busNumber.setCellValueFactory(
-                new PropertyValueFactory<Bus, String>(
-                        "busNumber"
-                )
+                new PropertyValueFactory<>("busNumber")
         );
+        busNumber.setMinWidth(125);
 
-        TableColumn<Bus, String> busType =
-                new TableColumn<Bus, String>(
-                        "Bus Type"
-                );
-
-        busType.setCellValueFactory(
-                new PropertyValueFactory<Bus, String>(
-                        "busType"
-                )
-        );
-
-        TableColumn<Bus, String> capacity =
-                new TableColumn<Bus, String>(
-                        "Capacity"
-                );
-
+        TableColumn<Bus, Number> capacity =
+                new TableColumn<>("Capacity");
         capacity.setCellValueFactory(
-                new PropertyValueFactory<Bus, String>(
-                        "capacity"
-                )
+                new PropertyValueFactory<>("capacity")
         );
+        capacity.setMinWidth(85);
 
         TableColumn<Bus, String> driver =
-                new TableColumn<Bus, String>(
-                        "Driver"
-                );
-
+                new TableColumn<>("Driver");
         driver.setCellValueFactory(
-                new PropertyValueFactory<Bus, String>(
-                        "driver"
-                )
+                new PropertyValueFactory<>("driverName")
         );
+        driver.setMinWidth(150);
 
         TableColumn<Bus, String> status =
-                new TableColumn<Bus, String>(
-                        "Status"
-                );
-
+                new TableColumn<>("Status");
         status.setCellValueFactory(
-                new PropertyValueFactory<Bus, String>(
-                        "status"
-                )
+                new PropertyValueFactory<>("status")
         );
+        status.setMinWidth(110);
 
         TableColumn<Bus, Void> action =
-                new TableColumn<Bus, Void>(
-                        "Action"
-                );
+                new TableColumn<>("Actions");
+        action.setMinWidth(145);
+        action.setMaxWidth(160);
 
-        action.setCellFactory(
-                column -> new TableCell<Bus, Void>() {
+        action.setCellFactory(column ->
+                new TableCell<Bus, Void>() {
 
                     private final Button edit =
                             new Button("Edit");
@@ -764,49 +434,52 @@ public class ManageBuses extends Application {
                             new Button("Delete");
 
                     private final HBox box =
-                            new HBox(5);
+                            new HBox(6);
 
                     {
+                        edit.setFont(
+                                Font.font("Segoe UI", 10)
+                        );
+                        edit.setTextFill(Color.WHITE);
+                        edit.setCursor(
+                                javafx.scene.Cursor.HAND
+                        );
                         edit.setStyle(
-                                "-fx-background-color: #1565C0;" +
-                                "-fx-text-fill: white;" +
-                                "-fx-background-radius: 4px;" +
-                                "-fx-cursor: hand;"
+                                "-fx-background-color: " +
+                                BLUE + ";" +
+                                "-fx-background-radius: 5px;"
                         );
 
+                        delete.setFont(
+                                Font.font("Segoe UI", 10)
+                        );
+                        delete.setTextFill(Color.WHITE);
+                        delete.setCursor(
+                                javafx.scene.Cursor.HAND
+                        );
                         delete.setStyle(
-                                "-fx-background-color: #C62828;" +
-                                "-fx-text-fill: white;" +
-                                "-fx-background-radius: 4px;" +
-                                "-fx-cursor: hand;"
+                                "-fx-background-color: " +
+                                RED + ";" +
+                                "-fx-background-radius: 5px;"
                         );
 
                         edit.setOnAction(e -> {
-
                             Bus bus =
                                     getTableView()
                                             .getItems()
                                             .get(getIndex());
-
                             editBus(bus);
-
                         });
 
                         delete.setOnAction(e -> {
-
                             Bus bus =
                                     getTableView()
                                             .getItems()
                                             .get(getIndex());
-
                             deleteBus(bus);
-
                         });
 
-                        box.setAlignment(
-                                Pos.CENTER
-                        );
-
+                        box.setAlignment(Pos.CENTER);
                         box.getChildren().addAll(
                                 edit,
                                 delete
@@ -818,21 +491,14 @@ public class ManageBuses extends Application {
                             Void item,
                             boolean empty
                     ) {
-
                         super.updateItem(
                                 item,
                                 empty
                         );
 
-                        if (empty) {
-
-                            setGraphic(null);
-
-                        } else {
-
-                            setGraphic(box);
-
-                        }
+                        setGraphic(
+                                empty ? null : box
+                        );
                     }
                 }
         );
@@ -840,162 +506,56 @@ public class ManageBuses extends Application {
         table.getColumns().addAll(
                 busId,
                 busNumber,
-                busType,
                 capacity,
                 driver,
                 status,
                 action
         );
 
-        table.setItems(
-                busList
-        );
-
+        table.setItems(buses);
         table.setColumnResizePolicy(
                 TableView.CONSTRAINED_RESIZE_POLICY
         );
-
-        table.setFixedCellSize(44);
-        table.setPlaceholder(new Label("No buses found."));
-
+        table.setFixedCellSize(42);
+        table.setPlaceholder(
+                new Label("No buses found.")
+        );
         table.setStyle(
                 "-fx-background-color: white;" +
-                "-fx-border-color: transparent;" +
-                "-fx-font-family: 'Segoe UI';" +
-                "-fx-font-size: 12px;"
+                "-fx-border-color: transparent;"
         );
     }
-
-    // ==========================================
-    // LOAD BUSES
-    // ==========================================
 
     private void loadBuses() {
-
-        busList.clear();
-
-        busList.addAll(
-
-                new Bus(
-                        "B001",
-                        "DHK-11-1001",
-                        "University Bus",
-                        "45",
-                        "Abdul Karim",
-                        "Active"
-                ),
-
-                new Bus(
-                        "B002",
-                        "DHK-11-1002",
-                        "University Bus",
-                        "50",
-                        "Rahim Uddin",
-                        "Active"
-                ),
-
-                new Bus(
-                        "B003",
-                        "DHK-11-1003",
-                        "AC Bus",
-                        "40",
-                        "Karim Ahmed",
-                        "Active"
-                ),
-
-                new Bus(
-                        "B004",
-                        "DHK-11-1004",
-                        "University Bus",
-                        "45",
-                        "Hasan Ali",
-                        "Maintenance"
-                ),
-
-                new Bus(
-                        "B005",
-                        "DHK-11-1005",
-                        "AC Bus",
-                        "40",
-                        "Jamal Hossain",
-                        "Active"
-                ),
-
-                new Bus(
-                        "B006",
-                        "DHK-11-1006",
-                        "University Bus",
-                        "50",
-                        "Sabbir Ahmed",
-                        "Inactive"
-                ),
-
-                new Bus(
-                        "B007",
-                        "DHK-11-1007",
-                        "University Bus",
-                        "45",
-                        "Rashed Khan",
-                        "Active"
-                )
-        );
+        buses.clear();
+        buses.addAll(data.getBuses());
     }
 
-    // ==========================================
-    // SEARCH BUS
-    // ==========================================
-
-    private void searchBus(
-            String keyword
-    ) {
-
+    private void searchBus(String keyword) {
         if (keyword == null ||
                 keyword.trim().isEmpty()) {
-
-            table.setItems(
-                    busList
-            );
-
+            table.setItems(buses);
             return;
         }
 
         String search =
-                keyword.toLowerCase();
+                keyword.trim().toLowerCase();
 
         ObservableList<Bus> result =
                 FXCollections.observableArrayList();
 
-        for (Bus bus : busList) {
+        for (Bus bus : buses) {
+            String id = safe(bus.getBusId());
+            String number = safe(bus.getBusNumber());
+            String driver = safe(bus.getDriverName());
+            String status = safe(bus.getStatus());
 
-            if (
-                    bus.getBusId()
-                            .toLowerCase()
-                            .contains(search)
-
-                    ||
-
-                    bus.getBusNumber()
-                            .toLowerCase()
-                            .contains(search)
-
-                    ||
-
-                    bus.getBusType()
-                            .toLowerCase()
-                            .contains(search)
-
-                    ||
-
-                    bus.getDriver()
-                            .toLowerCase()
-                            .contains(search)
-
-                    ||
-
-                    bus.getStatus()
-                            .toLowerCase()
-                            .contains(search)
-            ) {
+            if (id.toLowerCase().contains(search)
+                    || number.toLowerCase().contains(search)
+                    || driver.toLowerCase().contains(search)
+                    || status.toLowerCase().contains(search)
+                    || String.valueOf(bus.getCapacity())
+                            .contains(search)) {
 
                 result.add(bus);
             }
@@ -1004,108 +564,54 @@ public class ManageBuses extends Application {
         table.setItems(result);
     }
 
-    // ==========================================
-    // ADD BUS
-    // ==========================================
-
-    private void showAddBusDialog() {
-
+    private void addBus() {
         Dialog<ButtonType> dialog =
-                new Dialog<ButtonType>();
+                new Dialog<>();
 
-        dialog.setTitle(
-                "Add Bus"
-        );
+        dialog.setTitle("Add Bus");
+        dialog.setHeaderText("Add New Bus");
 
-        dialog.setHeaderText(
-                "Add New Bus"
-        );
+        TextField id = new TextField();
+        id.setPromptText("Bus ID");
 
-        TextField busId =
-                new TextField();
+        TextField number = new TextField();
+        number.setPromptText("Bus Number");
 
-        busId.setPromptText(
-                "Bus ID"
-        );
+        TextField capacity = new TextField();
+        capacity.setPromptText("Capacity");
 
-        TextField busNumber =
-                new TextField();
-
-        busNumber.setPromptText(
-                "Bus Number"
-        );
-
-        ComboBox<String> busType =
-                new ComboBox<String>();
-
-        busType.getItems().addAll(
-                "University Bus",
-                "AC Bus",
-                "Mini Bus"
-        );
-
-        busType.setValue(
-                "University Bus"
-        );
-
-        TextField capacity =
-                new TextField();
-
-        capacity.setPromptText(
-                "Capacity"
-        );
-
-        TextField driver =
-                new TextField();
-
-        driver.setPromptText(
-                "Driver Name"
-        );
+        TextField driver = new TextField();
+        driver.setPromptText("Driver Name");
 
         ComboBox<String> status =
-                new ComboBox<String>();
+                new ComboBox<>();
 
         status.getItems().addAll(
-                "Active",
+                "Available",
                 "Inactive",
                 "Maintenance"
         );
+        status.setValue("Available");
+        status.setMaxWidth(Double.MAX_VALUE);
 
-        status.setValue(
-                "Active"
-        );
-
-        VBox form =
-                new VBox(10);
-
-        form.setPadding(
-                new Insets(15)
-        );
+        VBox form = new VBox(8);
+        form.setPadding(new Insets(12));
+        form.setPrefWidth(360);
 
         form.getChildren().addAll(
-
                 new Label("Bus ID"),
-                busId,
-
+                id,
                 new Label("Bus Number"),
-                busNumber,
-
-                new Label("Bus Type"),
-                busType,
-
+                number,
                 new Label("Capacity"),
                 capacity,
-
-                new Label("Driver"),
+                new Label("Driver Name"),
                 driver,
-
                 new Label("Status"),
                 status
         );
 
-        dialog.getDialogPane()
-                .setContent(form);
-
+        dialog.getDialogPane().setContent(form);
         dialog.getDialogPane()
                 .getButtonTypes()
                 .addAll(
@@ -1113,149 +619,133 @@ public class ManageBuses extends Application {
                         ButtonType.OK
                 );
 
-        dialog.showAndWait()
-                .ifPresent(result -> {
+        dialog.showAndWait().ifPresent(result -> {
+            if (result != ButtonType.OK) {
+                return;
+            }
 
-                    if (result ==
-                            ButtonType.OK) {
+            String busId = id.getText().trim();
+            String busNumber =
+                    number.getText().trim();
+            String capacityText =
+                    capacity.getText().trim();
+            String driverName =
+                    driver.getText().trim();
 
-                        if (
-                                busId.getText()
-                                        .trim()
-                                        .isEmpty()
+            if (busId.isEmpty()
+                    || busNumber.isEmpty()
+                    || capacityText.isEmpty()
+                    || driverName.isEmpty()) {
 
-                                ||
+                showMessage(
+                        "Missing Information",
+                        "Please complete all bus fields."
+                );
+                return;
+            }
 
-                                busNumber.getText()
-                                        .trim()
-                                        .isEmpty()
+            int capacityValue;
 
-                                ||
+            try {
+                capacityValue =
+                        Integer.parseInt(capacityText);
+            } catch (NumberFormatException ex) {
+                showMessage(
+                        "Invalid Capacity",
+                        "Capacity must be a whole number."
+                );
+                return;
+            }
 
-                                capacity.getText()
-                                        .trim()
-                                        .isEmpty()
+            if (capacityValue <= 0) {
+                showMessage(
+                        "Invalid Capacity",
+                        "Capacity must be greater than zero."
+                );
+                return;
+            }
 
-                                ||
+            for (Bus existing : data.getBuses()) {
+                if (safe(existing.getBusId())
+                        .equalsIgnoreCase(busId)) {
 
-                                driver.getText()
-                                        .trim()
-                                        .isEmpty()
-                        ) {
+                    showMessage(
+                            "Duplicate Bus ID",
+                            "A bus with this ID already exists."
+                    );
+                    return;
+                }
+            }
 
-                            showMessage(
-                                    "Error",
-                                    "Please fill all required fields."
-                            );
+            Bus bus = new Bus(
+                    busId,
+                    busNumber,
+                    capacityValue,
+                    driverName
+            );
 
-                            return;
-                        }
+            bus.setStatus(status.getValue());
 
-                        Bus bus =
-                                new Bus(
-                                        busId.getText(),
-                                        busNumber.getText(),
-                                        busType.getValue(),
-                                        capacity.getText(),
-                                        driver.getText(),
-                                        status.getValue()
-                                );
+            data.getBuses().add(bus);
+            data.getBusAllocationManager()
+                    .addBus(bus);
 
-                        busList.add(bus);
-
-                        table.refresh();
-                    }
-                });
+            loadBuses();
+            table.setItems(buses);
+            table.refresh();
+        });
     }
 
-    // ==========================================
-    // EDIT BUS
-    // ==========================================
-
-    private void editBus(
-            Bus bus
-    ) {
-
-        TextField busNumber =
-                new TextField(
-                        bus.getBusNumber()
-                );
-
-        ComboBox<String> busType =
-                new ComboBox<String>();
-
-        busType.getItems().addAll(
-                "University Bus",
-                "AC Bus",
-                "Mini Bus"
-        );
-
-        busType.setValue(
-                bus.getBusType()
-        );
+    private void editBus(Bus bus) {
+        TextField number =
+                new TextField(bus.getBusNumber());
 
         TextField capacity =
                 new TextField(
-                        bus.getCapacity()
+                        String.valueOf(
+                                bus.getCapacity()
+                        )
                 );
 
         TextField driver =
-                new TextField(
-                        bus.getDriver()
-                );
+                new TextField(bus.getDriverName());
 
         ComboBox<String> status =
-                new ComboBox<String>();
+                new ComboBox<>();
 
         status.getItems().addAll(
-                "Active",
+                "Available",
+                "Assigned",
                 "Inactive",
                 "Maintenance"
         );
+        status.setValue(bus.getStatus());
+        status.setMaxWidth(Double.MAX_VALUE);
 
-        status.setValue(
-                bus.getStatus()
-        );
-
-        VBox form =
-                new VBox(10);
-
-        form.setPadding(
-                new Insets(15)
-        );
+        VBox form = new VBox(8);
+        form.setPadding(new Insets(12));
+        form.setPrefWidth(360);
 
         form.getChildren().addAll(
-
                 new Label("Bus Number"),
-                busNumber,
-
-                new Label("Bus Type"),
-                busType,
-
+                number,
                 new Label("Capacity"),
                 capacity,
-
-                new Label("Driver"),
+                new Label("Driver Name"),
                 driver,
-
                 new Label("Status"),
                 status
         );
 
         Dialog<ButtonType> dialog =
-                new Dialog<ButtonType>();
+                new Dialog<>();
 
-        dialog.setTitle(
-                "Edit Bus"
-        );
-
+        dialog.setTitle("Edit Bus");
         dialog.setHeaderText(
                 "Edit " + bus.getBusId()
         );
 
-        dialog.getDialogPane()
-                .setContent(form);
-
+        dialog.getDialogPane().setContent(form);
         dialog.getDialogPane()
                 .getButtonTypes()
                 .addAll(
@@ -1263,87 +753,176 @@ public class ManageBuses extends Application {
                         ButtonType.OK
                 );
 
-        dialog.showAndWait()
-                .ifPresent(result -> {
+        dialog.showAndWait().ifPresent(result -> {
+            if (result != ButtonType.OK) {
+                return;
+            }
 
-                    if (result ==
-                            ButtonType.OK) {
+            int capacityValue;
 
-                        bus.setBusNumber(
-                                busNumber.getText()
+            try {
+                capacityValue =
+                        Integer.parseInt(
+                                capacity.getText().trim()
                         );
+            } catch (NumberFormatException ex) {
+                showMessage(
+                        "Invalid Capacity",
+                        "Capacity must be a whole number."
+                );
+                return;
+            }
 
-                        bus.setBusType(
-                                busType.getValue()
-                        );
+            if (number.getText().trim().isEmpty()
+                    || driver.getText().trim().isEmpty()
+                    || capacityValue <= 0) {
 
-                        bus.setCapacity(
-                                capacity.getText()
-                        );
+                showMessage(
+                        "Invalid Information",
+                        "Please enter valid bus details."
+                );
+                return;
+            }
 
-                        bus.setDriver(
-                                driver.getText()
-                        );
+            bus.setBusNumber(
+                    number.getText().trim()
+            );
+            bus.setCapacity(capacityValue);
+            bus.setDriverName(
+                    driver.getText().trim()
+            );
+            bus.setStatus(status.getValue());
 
-                        bus.setStatus(
-                                status.getValue()
-                        );
-
-                        table.refresh();
-                    }
-                });
+            table.refresh();
+        });
     }
 
-    // ==========================================
-    // DELETE BUS
-    // ==========================================
-
-    private void deleteBus(
-            Bus bus
-    ) {
-
-        Alert alert =
-                new Alert(
-                        Alert.AlertType.CONFIRMATION
-                );
-
-        alert.setTitle(
-                "Delete Bus"
+    private void deleteBus(Bus bus) {
+        Alert alert = new Alert(
+                Alert.AlertType.CONFIRMATION
         );
 
+        alert.setTitle("Delete Bus");
         alert.setHeaderText(
                 "Delete " + bus.getBusNumber() + "?"
         );
-
         alert.setContentText(
-                "Are you sure you want to delete this bus?"
+                "This bus will be removed from the shared transport data."
         );
 
-        alert.showAndWait()
-                .ifPresent(result -> {
+        alert.showAndWait().ifPresent(result -> {
+            if (result == ButtonType.OK) {
+                data.getBuses().remove(bus);
+                data.getBusAllocationManager()
+                        .removeBus(bus.getBusId());
 
-                    if (result ==
-                            ButtonType.OK) {
+                buses.remove(bus);
+                table.refresh();
+            }
+        });
+    }
 
-                        busList.remove(bus);
-                    }
-                });
+    private Button createMenuButton(String text) {
+        Button button = new Button(text);
+
+        button.setMaxWidth(Double.MAX_VALUE);
+        button.setPrefHeight(42);
+        button.setMinHeight(42);
+        button.setAlignment(Pos.CENTER_LEFT);
+        button.setPadding(
+                new Insets(10, 12, 10, 12)
+        );
+        button.setTextFill(Color.WHITE);
+        button.setFont(
+                Font.font("Segoe UI", 12)
+        );
+        button.setCursor(
+                javafx.scene.Cursor.HAND
+        );
+
+        button.setStyle(
+                "-fx-background-color: transparent;" +
+                "-fx-text-fill: white;" +
+                "-fx-background-radius: 7px;" +
+                "-fx-cursor: hand;"
+        );
+
+        button.setOnMouseEntered(e ->
+                button.setStyle(
+                        "-fx-background-color: " +
+                        "rgba(255,255,255,0.12);" +
+                        "-fx-text-fill: white;" +
+                        "-fx-background-radius: 7px;" +
+                        "-fx-cursor: hand;"
+                )
+        );
+
+        button.setOnMouseExited(e ->
+                button.setStyle(
+                        "-fx-background-color: transparent;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-background-radius: 7px;" +
+                        "-fx-cursor: hand;"
+                )
+        );
+
+        return button;
+    }
+
+    private void setActive(Button button) {
+        button.setStyle(
+                "-fx-background-color: " +
+                BLUE2 + ";" +
+                "-fx-text-fill: white;" +
+                "-fx-background-radius: 7px;" +
+                "-fx-cursor: hand;"
+        );
+    }
+
+    private void setPrimaryButtonStyle(Button button) {
+        button.setStyle(
+                "-fx-background-color: " +
+                BLUE + ";" +
+                "-fx-background-radius: 7px;" +
+                "-fx-cursor: hand;"
+        );
+
+        button.setOnMouseEntered(e ->
+                button.setStyle(
+                        "-fx-background-color: " +
+                        BLUE2 + ";" +
+                        "-fx-background-radius: 7px;" +
+                        "-fx-cursor: hand;"
+                )
+        );
+
+        button.setOnMouseExited(e ->
+                button.setStyle(
+                        "-fx-background-color: " +
+                        BLUE + ";" +
+                        "-fx-background-radius: 7px;" +
+                        "-fx-cursor: hand;"
+                )
+        );
     }
 
     private ImageView createImageView(
             String resource,
             double width,
-            double height) {
-
+            double height
+    ) {
         java.io.InputStream stream =
-                ManageBuses.class.getResourceAsStream(resource);
+                ManageBuses.class
+                        .getResourceAsStream(resource);
 
         if (stream == null) {
             return new ImageView();
         }
 
+        Image image = new Image(stream);
+
         ImageView view =
-                new ImageView(new Image(stream));
+                new ImageView(image);
 
         view.setFitWidth(width);
         view.setFitHeight(height);
@@ -1353,122 +932,36 @@ public class ManageBuses extends Application {
         return view;
     }
 
-    // ==========================================
-    // MESSAGE
-    // ==========================================
+    private void updateCount(
+            Label count,
+            int number
+    ) {
+        count.setText(
+                number + " bus" +
+                (number == 1 ? "" : "es")
+        );
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
+    }
 
     private void showMessage(
             String title,
             String message
     ) {
-
         Alert alert =
                 new Alert(
                         Alert.AlertType.INFORMATION
                 );
 
         alert.setTitle(title);
-
         alert.setHeaderText(null);
-
         alert.setContentText(message);
-
         alert.showAndWait();
     }
 
-    // ==========================================
-    // BUS MODEL CLASS
-    // ==========================================
-
-    public static class Bus {
-
-        private String busId;
-        private String busNumber;
-        private String busType;
-        private String capacity;
-        private String driver;
-        private String status;
-
-        public Bus(
-                String busId,
-                String busNumber,
-                String busType,
-                String capacity,
-                String driver,
-                String status
-        ) {
-
-            this.busId = busId;
-            this.busNumber = busNumber;
-            this.busType = busType;
-            this.capacity = capacity;
-            this.driver = driver;
-            this.status = status;
-        }
-
-        public String getBusId() {
-
-            return busId;
-        }
-
-        public String getBusNumber() {
-
-            return busNumber;
-        }
-
-        public String getBusType() {
-
-            return busType;
-        }
-
-        public String getCapacity() {
-
-            return capacity;
-        }
-
-        public String getDriver() {
-
-            return driver;
-        }
-
-        public String getStatus() {
-
-            return status;
-        }
-
-        public void setBusNumber(
-                String busNumber
-        ) {
-
-            this.busNumber = busNumber;
-        }
-
-        public void setBusType(
-                String busType
-        ) {
-
-            this.busType = busType;
-        }
-
-        public void setCapacity(
-                String capacity
-        ) {
-
-            this.capacity = capacity;
-        }
-
-        public void setDriver(
-                String driver
-        ) {
-
-            this.driver = driver;
-        }
-
-        public void setStatus(
-                String status
-        ) {
-
-            this.status = status;
-        }
+    public static void main(String[] args) {
+        launch(args);
     }
 }
