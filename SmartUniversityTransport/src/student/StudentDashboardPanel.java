@@ -1,5 +1,7 @@
 package student;
 
+import authentication.StudentSession;
+import data.AppData;
 import model.Booking;
 
 import javax.swing.*;
@@ -20,22 +22,28 @@ public class StudentDashboardPanel extends JPanel {
     private final Color COLOR_PRIMARY = new Color(24, 119, 242);
     private final Color COLOR_BORDER = new Color(226, 232, 240);
 
+    private JLabel lblUpcomingTripValue;
+    private JLabel lblAvailableSeatsValue;
+    private JLabel lblAvailableRoutesValue;
+    private JLabel lblMyBookingsValue;
+    private JLabel metricValueLabel;
+
     public StudentDashboardPanel() {
-        setLayout(new BorderLayout(15, 15));
+        setLayout(new BorderLayout(18, 18));
         setBackground(COLOR_BG);
-        setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        setBorder(BorderFactory.createEmptyBorder(20, 24, 20, 24));
 
         // ================= 1. TOP HEADER =================
         JPanel topHeader = new JPanel(new BorderLayout());
         topHeader.setOpaque(false);
 
         JLabel lblTitle = new JLabel("Student Dashboard");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setForeground(COLOR_TEXT_DARK);
         topHeader.add(lblTitle, BorderLayout.WEST);
 
         // Date & User Profile Right Side
-        JPanel userProfilePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
+        JPanel userProfilePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 14, 0));
         userProfilePanel.setOpaque(false);
 
         JLabel lblDate = new JLabel("May 20, 2024  |  10:30 AM  ");
@@ -43,7 +51,7 @@ public class StudentDashboardPanel extends JPanel {
         lblDate.setForeground(new Color(100, 116, 139));
         userProfilePanel.add(lblDate);
 
-        JLabel lblUserText = new JLabel("<html><div style='text-align: right;'><b>Ahmed Rahman</b><br><font color='#64748B' size='2'>ID: 20210115</font></div></html>");
+        JLabel lblUserText = createCurrentStudentLabel();
         lblUserText.setFont(new Font("Segoe UI", Font.PLAIN, 12));
 
         JLabel lblAvatar = loadScaledLabel("/images/profile.png", 36, 36);
@@ -63,22 +71,33 @@ public class StudentDashboardPanel extends JPanel {
         centerContent.setOpaque(false);
 
         // ----- A. 4 TOP METRIC CARDS -----
-        JPanel cardsGrid = new JPanel(new GridLayout(1, 4, 12, 0));
+        JPanel cardsGrid = new JPanel(new GridLayout(1, 4, 14, 0));
         cardsGrid.setOpaque(false);
-        cardsGrid.setMaximumSize(new Dimension(2000, 90));
+        cardsGrid.setMaximumSize(new Dimension(2200, 100));
 
-        cardsGrid.add(createMetricCard("Upcoming Trip", "1", new Color(229, 240, 255), COLOR_PRIMARY));
-        cardsGrid.add(createMetricCard("Available Seats", "23", new Color(228, 248, 235), new Color(34, 197, 94)));
-        cardsGrid.add(createMetricCard("Available Routes", "8", new Color(243, 230, 255), new Color(168, 85, 247)));
-        cardsGrid.add(createMetricCard("My Bookings", "2", new Color(254, 237, 222), new Color(249, 115, 22)));
+        JPanel upcomingCard = createMetricCard("Upcoming Trip", String.valueOf(getUpcomingTripCount()), new Color(229, 240, 255), COLOR_PRIMARY);
+        lblUpcomingTripValue = metricValueLabel;
+        cardsGrid.add(upcomingCard);
+
+        JPanel availableSeatsCard = createMetricCard("Available Seats", String.valueOf(getAvailableSeatCount()), new Color(228, 248, 235), new Color(34, 197, 94));
+        lblAvailableSeatsValue = metricValueLabel;
+        cardsGrid.add(availableSeatsCard);
+
+        JPanel availableRoutesCard = createMetricCard("Available Routes", String.valueOf(getAvailableRouteCount()), new Color(243, 230, 255), new Color(168, 85, 247));
+        lblAvailableRoutesValue = metricValueLabel;
+        cardsGrid.add(availableRoutesCard);
+
+        JPanel myBookingsCard = createMetricCard("My Bookings", String.valueOf(getMyBookingCount()), new Color(254, 237, 222), new Color(249, 115, 22));
+        lblMyBookingsValue = metricValueLabel;
+        cardsGrid.add(myBookingsCard);
 
         centerContent.add(cardsGrid);
         centerContent.add(Box.createVerticalStrut(15));
 
         // ----- B. MIDDLE SECTION (NEXT TRIP & ANNOUNCEMENTS) -----
-        JPanel middleGrid = new JPanel(new GridLayout(1, 2, 15, 0));
+        JPanel middleGrid = new JPanel(new GridLayout(1, 2, 18, 0));
         middleGrid.setOpaque(false);
-        middleGrid.setMaximumSize(new Dimension(2000, 220));
+        middleGrid.setMaximumSize(new Dimension(2200, 240));
 
         // 1. Next Trip Card Section
         JPanel nextTripCard = createStyledPanel();
@@ -92,11 +111,24 @@ public class StudentDashboardPanel extends JPanel {
         JPanel tripDetails = new JPanel(new GridLayout(5, 2, 5, 4));
         tripDetails.setOpaque(false);
 
-        addDetailRow(tripDetails, "Route:", "Mirpur 10 to University");
-        addDetailRow(tripDetails, "Date:", "May 21, 2024 (Tuesday)");
-        addDetailRow(tripDetails, "Time:", "07:30 AM");
-        addDetailRow(tripDetails, "Pick-up Point:", "Kazipara Bus Stand");
-        addDetailRow(tripDetails, "Bus / Seat:", "BUS-12 / Seat 23");
+        Booking nextBooking = getNextStudentBooking();
+
+        if (nextBooking != null) {
+            addDetailRow(tripDetails, "Route:",
+                    nextBooking.getRoute().getRouteName() + " to University");
+            addDetailRow(tripDetails, "Date:", nextBooking.getTravelDate());
+            addDetailRow(tripDetails, "Time:", nextBooking.getTravelTime());
+            addDetailRow(tripDetails, "Pick-up Point:",
+                    getPickupPoint(nextBooking.getRoute().getRouteName()));
+            addDetailRow(tripDetails, "Bus / Seat:",
+                    "Seat " + nextBooking.getSeatNumber());
+        } else {
+            addDetailRow(tripDetails, "Route:", "No upcoming booking");
+            addDetailRow(tripDetails, "Date:", "-");
+            addDetailRow(tripDetails, "Time:", "-");
+            addDetailRow(tripDetails, "Pick-up Point:", "-");
+            addDetailRow(tripDetails, "Bus / Seat:", "-");
+        }
 
         nextTripCard.add(tripDetails, BorderLayout.CENTER);
 
@@ -156,19 +188,26 @@ public class StudentDashboardPanel extends JPanel {
         String[] columns = {"Date", "Route", "Time", "Pick-up Point", "Seat", "Status"};
         DefaultTableModel model = new DefaultTableModel(columns, 0);
 
-        List<Booking> list = new ArrayList<>();
-//        list.add(new Booking("1", "May 21, 2024", "Mirpur 10 to University", "07:30 AM", "23", "Confirmed"));
-//        list.add(new Booking("2", "May 16, 2024", "Dhanmondi to University", "01:30 PM", "15", "Completed"));
+        List<Booking> list = getCurrentStudentBookings();
 
-//        for (Booking b : list) {
-//            String pickup = b.getRoute().contains("Mirpur") ? "Kazipara Bus Stand" : "Dhanmondi 27";
-//            model.addRow(new Object[]{b.getDate(), b.getRoute(), b.getTime(), pickup, b.getSeat(), b.getStatus()});
-//        }
+        for (Booking b : list) {
+            String pickup = getPickupPoint(b.getRoute().getRouteName());
+
+            model.addRow(new Object[]{
+                    b.getTravelDate(),
+                    b.getRoute().getRouteName() + " to University",
+                    b.getTravelTime(),
+                    pickup,
+                    String.valueOf(b.getSeatNumber()),
+                    b.getStatus()
+            });
+        }
 
         JTable table = new JTable(model);
-        table.setRowHeight(36);
+        table.setRowHeight(40);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 38));
         table.getTableHeader().setBackground(new Color(248, 250, 252));
         table.setShowVerticalLines(false);
         table.setGridColor(new Color(241, 245, 249));
@@ -190,12 +229,204 @@ public class StudentDashboardPanel extends JPanel {
         centerContent.add(tableCardPanel);
 
         add(centerContent, BorderLayout.CENTER);
+
+        // StudentMainFrame uses CardLayout. Refresh live metrics whenever
+        // the dashboard becomes visible again after a booking is made.
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent e) {
+                refreshLiveMetrics();
+            }
+        });
+
+        refreshLiveMetrics();
+    }
+
+    private void refreshLiveMetrics() {
+        if (lblUpcomingTripValue != null) {
+            lblUpcomingTripValue.setText(String.valueOf(getUpcomingTripCount()));
+        }
+        if (lblAvailableSeatsValue != null) {
+            lblAvailableSeatsValue.setText(String.valueOf(getAvailableSeatCount()));
+        }
+        if (lblAvailableRoutesValue != null) {
+            lblAvailableRoutesValue.setText(String.valueOf(getAvailableRouteCount()));
+        }
+        if (lblMyBookingsValue != null) {
+            lblMyBookingsValue.setText(String.valueOf(getMyBookingCount()));
+        }
+
+        revalidate();
+        repaint();
+    }
+
+    private JLabel createCurrentStudentLabel() {
+        model.Student currentStudent = StudentSession.getCurrentStudent();
+
+        String name = "Student";
+        String id = "N/A";
+
+        if (currentStudent != null) {
+            if (currentStudent.getName() != null
+                    && !currentStudent.getName().trim().isEmpty()) {
+                name = currentStudent.getName().trim();
+            }
+
+            if (currentStudent.getStudentId() != null
+                    && !currentStudent.getStudentId().trim().isEmpty()) {
+                id = currentStudent.getStudentId().trim();
+            }
+        }
+
+        return new JLabel(
+                "<html><div style='text-align: right;'><b>"
+                        + escapeHtml(name)
+                        + "</b><br><font color='#64748B' size='2'>ID: "
+                        + escapeHtml(id)
+                        + "</font></div></html>"
+        );
+    }
+
+    private String escapeHtml(String value) {
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+
+    private Booking getNextStudentBooking() {
+        List<Booking> bookings = getCurrentStudentBookings();
+
+        for (Booking booking : bookings) {
+            if (booking != null
+                    && booking.isConfirmed()
+                    && booking.getRoute() != null) {
+                return booking;
+            }
+        }
+
+        return null;
+    }
+
+    private List<Booking> getCurrentStudentBookings() {
+        List<Booking> bookings = new ArrayList<>();
+        model.Student currentStudent = StudentSession.getCurrentStudent();
+
+        if (currentStudent == null) {
+            return bookings;
+        }
+
+        for (Booking booking : AppData.getTransportData().getBookings()) {
+            if (booking.getStudent() == currentStudent
+                    || (booking.getStudent() != null
+                    && booking.getStudent().getStudentId() != null
+                    && booking.getStudent().getStudentId()
+                    .equalsIgnoreCase(currentStudent.getStudentId()))) {
+                bookings.add(booking);
+            }
+        }
+
+        // Most recent bookings first.
+        bookings.sort((a, b) -> {
+            String aKey = String.valueOf(a.getTravelDate()) + " " + String.valueOf(a.getTravelTime());
+            String bKey = String.valueOf(b.getTravelDate()) + " " + String.valueOf(b.getTravelTime());
+            return bKey.compareTo(aKey);
+        });
+
+        return bookings;
+    }
+
+    private String getPickupPoint(String routeName) {
+        if (routeName == null) {
+            return "Not specified";
+        }
+
+        if (routeName.toLowerCase().contains("mirpur")) {
+            return "Kazipara Bus Stand";
+        }
+        if (routeName.toLowerCase().contains("dhanmondi")) {
+            return "Dhanmondi 27";
+        }
+        if (routeName.toLowerCase().contains("uttara")) {
+            return "House Building Uttara";
+        }
+        if (routeName.toLowerCase().contains("farmgate")) {
+            return "Farmgate Metro Station";
+        }
+        if (routeName.toLowerCase().contains("ecb")) {
+            return "ECB Chattar";
+        }
+
+        return "Not specified";
+    }
+
+    private int getMyBookingCount() {
+        model.Student currentStudent = StudentSession.getCurrentStudent();
+        if (currentStudent == null) {
+            return 0;
+        }
+
+        int count = 0;
+        for (Booking booking : AppData.getTransportData().getBookings()) {
+            if (booking.getStudent() == currentStudent
+                    || (booking.getStudent() != null
+                    && booking.getStudent().getStudentId() != null
+                    && booking.getStudent().getStudentId()
+                    .equalsIgnoreCase(currentStudent.getStudentId()))) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private int getUpcomingTripCount() {
+        model.Student currentStudent = StudentSession.getCurrentStudent();
+        if (currentStudent == null) {
+            return 0;
+        }
+
+        int count = 0;
+        for (Booking booking : AppData.getTransportData().getBookings()) {
+            if (!"Confirmed".equalsIgnoreCase(booking.getStatus())) {
+                continue;
+            }
+
+            if (booking.getStudent() == currentStudent
+                    || (booking.getStudent() != null
+                    && booking.getStudent().getStudentId() != null
+                    && booking.getStudent().getStudentId()
+                    .equalsIgnoreCase(currentStudent.getStudentId()))) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private int getAvailableRouteCount() {
+        return AppData.getTransportData().getRoutes().size();
+    }
+
+    private int getAvailableSeatCount() {
+        int totalCapacity = 0;
+        for (model.Route route : AppData.getTransportData().getRoutes()) {
+            totalCapacity += Math.max(0, route.getBusCapacity());
+        }
+
+        int confirmedBookings = 0;
+        for (Booking booking : AppData.getTransportData().getBookings()) {
+            if (booking.isConfirmed()) {
+                confirmedBookings++;
+            }
+        }
+
+        return Math.max(0, totalCapacity - confirmedBookings);
     }
 
     // Modal Ticket Dialog Viewer
     private void showTicketDialog() {
         JDialog ticketDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Bus E-Ticket", true);
-        ticketDialog.setSize(360, 420);
+        ticketDialog.setSize(380, 440);
         ticketDialog.setLocationRelativeTo(this);
         ticketDialog.setResizable(false);
 
@@ -228,12 +459,36 @@ public class StudentDashboardPanel extends JPanel {
                 new EmptyBorder(12, 12, 12, 12)
         ));
 
-        addDetailRow(body, "Passenger:", "Ahmed Rahman");
-        addDetailRow(body, "Student ID:", "20210115");
-        addDetailRow(body, "Route:", "Mirpur 10 to University");
-        addDetailRow(body, "Date & Time:", "May 21, 2024 | 07:30 AM");
-        addDetailRow(body, "Pick-up Point:", "Kazipara Bus Stand");
-        addDetailRow(body, "Bus / Seat:", "BUS-12 / Seat 23");
+        model.Student currentStudent = StudentSession.getCurrentStudent();
+
+        String passengerName = currentStudent != null
+                ? currentStudent.getName()
+                : "Student";
+
+        String studentId = currentStudent != null
+                ? currentStudent.getStudentId()
+                : "N/A";
+
+        Booking ticketBooking = getNextStudentBooking();
+
+        addDetailRow(body, "Passenger:", passengerName);
+        addDetailRow(body, "Student ID:", studentId);
+
+        if (ticketBooking != null) {
+            addDetailRow(body, "Route:",
+                    ticketBooking.getRoute().getRouteName() + " to University");
+            addDetailRow(body, "Date & Time:",
+                    ticketBooking.getTravelDate() + " | " + ticketBooking.getTravelTime());
+            addDetailRow(body, "Pick-up Point:",
+                    getPickupPoint(ticketBooking.getRoute().getRouteName()));
+            addDetailRow(body, "Bus / Seat:",
+                    "Seat " + ticketBooking.getSeatNumber());
+        } else {
+            addDetailRow(body, "Route:", "No upcoming booking");
+            addDetailRow(body, "Date & Time:", "-");
+            addDetailRow(body, "Pick-up Point:", "-");
+            addDetailRow(body, "Bus / Seat:", "-");
+        }
 
         panel.add(body, BorderLayout.CENTER);
 
@@ -278,6 +533,7 @@ public class StudentDashboardPanel extends JPanel {
         JLabel lblVal = new JLabel(val);
         lblVal.setFont(new Font("Segoe UI", Font.BOLD, 22));
         lblVal.setForeground(accentColor);
+        metricValueLabel = lblVal;
 
         JLabel lblLink = new JLabel("View Details >");
         lblLink.setFont(new Font("Segoe UI", Font.PLAIN, 10));
@@ -343,7 +599,20 @@ public class StudentDashboardPanel extends JPanel {
                 g2.setColor(COLOR_PRIMARY);
                 g2.setFont(new Font("Segoe UI", Font.BOLD, 14));
                 FontMetrics fm = g2.getFontMetrics();
-                String text = "AR";
+                model.Student currentStudent = StudentSession.getCurrentStudent();
+                String text = "ST";
+
+                if (currentStudent != null && currentStudent.getName() != null
+                        && !currentStudent.getName().trim().isEmpty()) {
+                    String name = currentStudent.getName().trim();
+                    text = name.substring(0, 1).toUpperCase();
+
+                    int space = name.indexOf(' ');
+                    if (space > 0 && space + 1 < name.length()) {
+                        text += name.substring(space + 1, space + 2).toUpperCase();
+                    }
+                }
+
                 g2.drawString(text, (getWidth() - fm.stringWidth(text)) / 2, (getHeight() + fm.getAscent() / 2) / 2);
                 g2.dispose();
             }

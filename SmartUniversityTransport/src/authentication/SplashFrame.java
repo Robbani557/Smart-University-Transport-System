@@ -167,7 +167,7 @@ public class SplashFrame extends JFrame {
                     Timer transition = new Timer(350, event -> {
                         ((Timer) event.getSource()).stop();
                         dispose();
-                        new LoginFrame().setVisible(true);
+                        new RoleSelectionFrame().setVisible(true);
                     });
 
                     transition.setRepeats(false);
@@ -177,6 +177,13 @@ public class SplashFrame extends JFrame {
         });
 
         timer.start();
+    }
+
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() ->
+                new SplashFrame().setVisible(true)
+        );
     }
 
     private static class ImageLabel extends JLabel {

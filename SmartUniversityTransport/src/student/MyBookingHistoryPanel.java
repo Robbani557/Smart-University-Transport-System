@@ -1,5 +1,7 @@
 package student;
 
+import authentication.StudentSession;
+import data.AppData;
 import model.Booking;
 
 import javax.swing.*;
@@ -33,12 +35,12 @@ public class MyBookingHistoryPanel extends JPanel {
     private final int PAGE_SIZE = 4; // Rows per page
 
     public MyBookingHistoryPanel() {
-        setLayout(new BorderLayout(0, 15));
+        setLayout(new BorderLayout(0, 18));
         setBackground(COLOR_BG);
-        setBorder(new EmptyBorder(20, 25, 20, 25));
+        setBorder(new EmptyBorder(22, 26, 22, 26));
 
         // Load Master Data
-        masterBookingList = getSampleBookingData();
+        masterBookingList = getCurrentStudentBookingData();
 
         // ================= 1. HEADER SECTION =================
         JPanel headerPanel = new JPanel();
@@ -46,7 +48,7 @@ public class MyBookingHistoryPanel extends JPanel {
         headerPanel.setOpaque(false);
 
         JLabel lblTitle = new JLabel("My Booking History");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setForeground(COLOR_TEXT_DARK);
 
         JLabel lblSubTitle = new JLabel("View all your past and upcoming bookings");
@@ -60,15 +62,15 @@ public class MyBookingHistoryPanel extends JPanel {
         add(headerPanel, BorderLayout.NORTH);
 
         // ================= 2. CARD CONTAINER =================
-        JPanel cardPanel = new JPanel(new BorderLayout(0, 15));
+        JPanel cardPanel = new JPanel(new BorderLayout(0, 16));
         cardPanel.setBackground(Color.WHITE);
         cardPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(COLOR_BORDER, 1, true),
-                new EmptyBorder(15, 20, 15, 20)
+                new EmptyBorder(17, 22, 17, 22)
         ));
 
         // ----- TAB FILTER BAR -----
-        JPanel filterBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 25, 0));
+        JPanel filterBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 28, 0));
         filterBar.setOpaque(false);
         filterBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, COLOR_BORDER));
 
@@ -89,13 +91,13 @@ public class MyBookingHistoryPanel extends JPanel {
         };
 
         table = new JTable(tableModel);
-        table.setRowHeight(42);
+        table.setRowHeight(44);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         table.setForeground(COLOR_TEXT_DARK);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
         table.getTableHeader().setForeground(COLOR_TEXT_MUTED);
         table.getTableHeader().setBackground(new Color(248, 250, 252));
-        table.getTableHeader().setPreferredSize(new Dimension(0, 35));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 38));
         table.setShowVerticalLines(false);
         table.setGridColor(new Color(241, 245, 249));
 
@@ -118,7 +120,7 @@ public class MyBookingHistoryPanel extends JPanel {
         cardPanel.add(scrollPane, BorderLayout.CENTER);
 
         // ----- PAGINATION BAR CONTAINER -----
-        paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 10));
+        paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 7, 12));
         paginationPanel.setOpaque(false);
         cardPanel.add(paginationPanel, BorderLayout.SOUTH);
 
@@ -126,6 +128,17 @@ public class MyBookingHistoryPanel extends JPanel {
 
         // Initial Data & Pagination Load
         refreshTableData();
+
+        // CardLayout keeps this panel alive. Reload the shared booking data
+        // whenever the user navigates back to My Bookings.
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent e) {
+                masterBookingList = getCurrentStudentBookingData();
+                currentPage = 1;
+                refreshTableData();
+            }
+        });
     }
 
     // Dynamic Filter & Pagination Engine
@@ -265,30 +278,36 @@ public class MyBookingHistoryPanel extends JPanel {
         if (isActive) {
             btn.setBackground(COLOR_PRIMARY);
             btn.setForeground(Color.WHITE);
-            btn.setBorder(BorderFactory.createEmptyBorder(5, 12, 5, 12));
+            btn.setBorder(BorderFactory.createEmptyBorder(6, 13, 6, 13));
         } else {
             btn.setBackground(Color.WHITE);
             btn.setForeground(COLOR_TEXT_MUTED);
             btn.setBorder(BorderFactory.createLineBorder(COLOR_BORDER, 1));
-            btn.setPreferredSize(isNumber ? new Dimension(32, 28) : new Dimension(85, 28));
+            btn.setPreferredSize(isNumber ? new Dimension(34, 30) : new Dimension(92, 30));
         }
 
         return btn;
     }
 
-    // Expanded Sample Data Builder (10 Items for multi-page demonstration)
-    private List<Booking> getSampleBookingData() {
+    // Load bookings belonging to the currently logged-in student.
+    private List<Booking> getCurrentStudentBookingData() {
         List<Booking> list = new ArrayList<>();
-//        list.add(new Booking("BK240521001", "May 21, 2024", "Mirpur 10 -> University", "07:30 AM", "23", "Confirmed"));
-//        list.add(new Booking("BK240520015", "May 20, 2024", "Dhanmondi -> University", "07:30 AM", "05", "Confirmed"));
-//        list.add(new Booking("BK240519008", "May 19, 2024", "Uttara -> University", "01:30 PM", "14", "Confirmed"));
-//        list.add(new Booking("BK240516032", "May 16, 2024", "Dhanmondi -> University", "01:30 PM", "15", "Completed"));
-//        list.add(new Booking("BK240514018", "May 14, 2024", "Uttara -> University", "07:30 AM", "12", "Completed"));
-//        list.add(new Booking("BK240512003", "May 12, 2024", "Farmgate -> University", "04:30 PM", "08", "Completed"));
-//        list.add(new Booking("BK240510011", "May 10, 2024", "ECB Chattar -> University", "07:30 AM", "19", "Completed"));
-//        list.add(new Booking("BK240509007", "May 9, 2024", "Mirpur 10 -> University", "07:30 AM", "09", "Cancelled"));
-//        list.add(new Booking("BK240507022", "May 7, 2024", "Banani -> University", "01:30 PM", "18", "Completed"));
-//        list.add(new Booking("BK240505019", "May 5, 2024", "Mirpur 10 -> University", "04:30 PM", "02", "Cancelled"));
+        model.Student currentStudent = StudentSession.getCurrentStudent();
+
+        if (currentStudent == null) {
+            return list;
+        }
+
+        for (Booking booking : AppData.getTransportData().getBookings()) {
+            if (booking.getStudent() == currentStudent
+                    || (booking.getStudent() != null
+                    && booking.getStudent().getStudentId() != null
+                    && booking.getStudent().getStudentId()
+                    .equalsIgnoreCase(currentStudent.getStudentId()))) {
+                list.add(booking);
+            }
+        }
+
         return list;
     }
 

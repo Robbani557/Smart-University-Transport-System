@@ -1,5 +1,11 @@
 package student;
 
+import authentication.StudentSession;
+import data.AppData;
+import data.TransportData;
+import model.Booking;
+import model.Route;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -25,16 +31,16 @@ public class BookSeatPanel extends JPanel {
     private JComboBox<String> cmbPickup;
 
     public BookSeatPanel() {
-        setLayout(new BorderLayout(15, 15));
+        setLayout(new BorderLayout(18, 18));
         setBackground(COLOR_BG);
-        setBorder(BorderFactory.createEmptyBorder(20, 25, 20, 25));
+        setBorder(BorderFactory.createEmptyBorder(22, 26, 22, 26));
 
         // ================= 1. TOP HEADER =================
         JPanel topHeader = new JPanel(new BorderLayout());
         topHeader.setOpaque(false);
 
         JLabel lblTitle = new JLabel("Book a Seat");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setForeground(COLOR_TEXT_DARK);
 
         JLabel lblSubTitle = new JLabel("Fill in the details to book your seat");
@@ -52,18 +58,18 @@ public class BookSeatPanel extends JPanel {
         add(topHeader, BorderLayout.NORTH);
 
         // ================= 2. MAIN CONTENT AREA =================
-        JPanel mainContent = new JPanel(new GridLayout(1, 2, 20, 0));
+        JPanel mainContent = new JPanel(new GridLayout(1, 2, 22, 0));
         mainContent.setOpaque(false);
 
         // ----- LEFT PANEL: FORM INPUTS & AVAILABLE SEATS -----
         JPanel formCard = createStyledPanel();
-        formCard.setLayout(new BorderLayout(15, 15));
+        formCard.setLayout(new BorderLayout(18, 18));
 
         JPanel formFields = new JPanel(new GridBagLayout());
         formFields.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(8, 0, 8, 0);
+        gbc.insets = new Insets(9, 0, 9, 0);
         gbc.weightx = 1.0;
 
         // Select Route Dropdown
@@ -104,7 +110,7 @@ public class BookSeatPanel extends JPanel {
         formCard.add(formFields, BorderLayout.NORTH);
 
         // Available Seats Indicator
-        JPanel seatContainer = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 15));
+        JPanel seatContainer = new JPanel(new FlowLayout(FlowLayout.CENTER, 34, 18));
         seatContainer.setOpaque(false);
 
         JLabel lblAvailableText = new JLabel("Available Seats");
@@ -130,22 +136,65 @@ public class BookSeatPanel extends JPanel {
         btnCheck.setFocusPainted(false);
         btnCheck.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         btnCheck.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnCheck.setPreferredSize(new Dimension(0, 42));
+        btnCheck.setPreferredSize(new Dimension(0, 44));
 
         // Action listener attached
-        btnCheck.addActionListener(e -> openSeatSelectionDialog());
+        btnCheck.addActionListener(e -> {
+            if (StudentSession.getCurrentStudent() == null) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please log in again before booking a seat.",
+                        "Session Required",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            Route route = getSelectedRoute();
+            if (route == null) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "The selected route is not available.",
+                        "Route Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
+
+            String travelDate = String.valueOf(cmbDate.getSelectedItem());
+            String travelTime = String.valueOf(cmbTime.getSelectedItem());
+
+            TransportData data = AppData.getTransportData();
+            int bookedSeats = data.getBookingManager()
+                    .getBookingsForDateAndRoute(travelDate, route.getRouteName());
+
+            availableSeats = Math.max(0, route.getBusCapacity() - bookedSeats);
+            lblSeatCount.setText(String.valueOf(availableSeats));
+
+            if (availableSeats <= 0) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No seats are currently available for this route and date.",
+                        "No Availability",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+                return;
+            }
+
+            openSeatSelectionDialog();
+        });
 
         formCard.add(btnCheck, BorderLayout.SOUTH);
 
         mainContent.add(formCard);
 
         // ----- RIGHT PANEL: IMPORTANT NOTES & GRAPHIC -----
-        JPanel rightPanel = new JPanel(new BorderLayout(15, 15));
+        JPanel rightPanel = new JPanel(new BorderLayout(16, 16));
         rightPanel.setOpaque(false);
 
         // Important Notes Card
         JPanel notesCard = createStyledPanel();
-        notesCard.setLayout(new BorderLayout(10, 10));
+        notesCard.setLayout(new BorderLayout(12, 12));
 
         JLabel lblNotesTitle = new JLabel("Important Notes");
         lblNotesTitle.setFont(new Font("Segoe UI", Font.BOLD, 15));
@@ -183,13 +232,13 @@ public class BookSeatPanel extends JPanel {
     // Modal Seat Selection Grid Dialog
     private void openSeatSelectionDialog() {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Select Bus Seat", true);
-        dialog.setSize(420, 520);
+        dialog.setSize(440, 540);
         dialog.setLocationRelativeTo(this);
         dialog.setResizable(false);
 
         JPanel root = new JPanel(new BorderLayout(12, 12));
         root.setBackground(Color.WHITE);
-        root.setBorder(new EmptyBorder(15, 20, 15, 20));
+        root.setBorder(new EmptyBorder(18, 22, 18, 22));
 
         // Header Information
         JPanel header = new JPanel();
@@ -209,7 +258,7 @@ public class BookSeatPanel extends JPanel {
         root.add(header, BorderLayout.NORTH);
 
         // Interactive Seat Grid (5 rows of 4 seats = 20 seats)
-        JPanel busGrid = new JPanel(new GridLayout(6, 5, 8, 8));
+        JPanel busGrid = new JPanel(new GridLayout(6, 5, 9, 9));
         busGrid.setOpaque(false);
 
         // Driver Indicator Header Row
@@ -223,7 +272,11 @@ public class BookSeatPanel extends JPanel {
         busGrid.add(new JLabel("")); // Spacer
 
         // Java 8 Compatible Occupied Seats Set Initialization
-        Set<Integer> occupiedSeats = new HashSet<>(Arrays.asList(2, 5, 8, 11, 14, 18));
+        Set<Integer> occupiedSeats = getOccupiedSeats(
+                getSelectedRoute(),
+                String.valueOf(cmbDate.getSelectedItem()),
+                String.valueOf(cmbTime.getSelectedItem())
+        );
         final int[] selectedSeat = {-1};
         JButton[] seatButtons = new JButton[21];
 
@@ -290,19 +343,74 @@ public class BookSeatPanel extends JPanel {
         btnConfirm.setContentAreaFilled(false);
         btnConfirm.setOpaque(true);
         btnConfirm.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnConfirm.setPreferredSize(new Dimension(0, 38));
+        btnConfirm.setPreferredSize(new Dimension(0, 40));
 
         btnConfirm.addActionListener(e -> {
             if (selectedSeat[0] == -1) {
                 JOptionPane.showMessageDialog(dialog, "Please select an available seat first!", "Selection Required", JOptionPane.WARNING_MESSAGE);
             } else {
-                availableSeats--;
+                model.Student currentStudent = StudentSession.getCurrentStudent();
+                Route selectedRoute = getSelectedRoute();
+
+                if (currentStudent == null) {
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "Your student session has expired. Please log in again.",
+                            "Session Required",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                    return;
+                }
+
+                if (selectedRoute == null) {
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "The selected route could not be found.",
+                            "Route Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                    return;
+                }
+
+                String travelDate = String.valueOf(cmbDate.getSelectedItem());
+                String travelTime = String.valueOf(cmbTime.getSelectedItem());
+
+                // Re-check the selected seat immediately before saving.
+                Set<Integer> currentOccupiedSeats =
+                        getOccupiedSeats(selectedRoute, travelDate, travelTime);
+
+                if (currentOccupiedSeats.contains(selectedSeat[0])) {
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "That seat has already been booked. Please select another seat.",
+                            "Seat Unavailable",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                    return;
+                }
+
+                Booking booking = new Booking(
+                        currentStudent,
+                        selectedRoute,
+                        travelDate,
+                        travelTime,
+                        selectedSeat[0]
+                );
+
+                AppData.getTransportData().addBooking(booking);
+
+                availableSeats = Math.max(0, availableSeats - 1);
                 lblSeatCount.setText(String.valueOf(availableSeats));
+
                 dialog.dispose();
-                JOptionPane.showMessageDialog(this,
-                        "Successfully booked Seat " + selectedSeat[0] + " for " + cmbRoute.getSelectedItem(),
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Successfully booked Seat " + selectedSeat[0]
+                                + " for " + cmbRoute.getSelectedItem(),
                         "Booking Confirmed",
-                        JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.INFORMATION_MESSAGE
+                );
             }
         });
 
@@ -311,6 +419,60 @@ public class BookSeatPanel extends JPanel {
 
         dialog.add(root);
         dialog.setVisible(true);
+    }
+
+    private Route getSelectedRoute() {
+        Object selected = cmbRoute.getSelectedItem();
+
+        if (selected == null) {
+            return null;
+        }
+
+        String displayName = selected.toString();
+        String routeName = displayName;
+
+        int separator = displayName.indexOf(" to ");
+        if (separator > 0) {
+            routeName = displayName.substring(0, separator).trim();
+        }
+
+        return AppData.getTransportData().findRoute(routeName);
+    }
+
+    private Set<Integer> getOccupiedSeats(
+            Route route,
+            String travelDate,
+            String travelTime) {
+
+        Set<Integer> occupied = new HashSet<>();
+
+        if (route == null) {
+            return occupied;
+        }
+
+        for (Booking booking : AppData.getTransportData().getBookings()) {
+            if (!booking.isConfirmed()) {
+                continue;
+            }
+
+            if (booking.getRoute() == null
+                    || !booking.getRoute().getRouteName()
+                    .equalsIgnoreCase(route.getRouteName())) {
+                continue;
+            }
+
+            if (!travelDate.equals(booking.getTravelDate())) {
+                continue;
+            }
+
+            if (!travelTime.equals(booking.getTravelTime())) {
+                continue;
+            }
+
+            occupied.add(booking.getSeatNumber());
+        }
+
+        return occupied;
     }
 
     private JPanel createLegendItem(String text, Color color) {
@@ -336,7 +498,7 @@ public class BookSeatPanel extends JPanel {
         p.setBackground(COLOR_CARD_BG);
         p.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(226, 232, 240), 1),
-                BorderFactory.createEmptyBorder(15, 18, 15, 18)
+                BorderFactory.createEmptyBorder(17, 20, 17, 20)
         ));
         return p;
     }
@@ -352,7 +514,7 @@ public class BookSeatPanel extends JPanel {
         JComboBox<String> comboBox = new JComboBox<>(options);
         comboBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         comboBox.setBackground(Color.WHITE);
-        comboBox.setPreferredSize(new Dimension(0, 35));
+        comboBox.setPreferredSize(new Dimension(0, 38));
         parent.add(comboBox, gbc);
 
         return comboBox;

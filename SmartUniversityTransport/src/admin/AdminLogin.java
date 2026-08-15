@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javafx.embed.swing.JFXPanel;
 
 public class AdminLogin extends JFrame {
 
@@ -320,21 +321,22 @@ public class AdminLogin extends JFrame {
     private void openAdminDashboard() {
         /*
          * AdminLogin is Swing while AdminDashboard is JavaFX.
-         * The dashboard must therefore be created on the JavaFX
-         * Application Thread. Platform.runLater() is used here
-         * because the project already starts JavaFX elsewhere.
+         *
+         * The application starts from Swing, so JavaFX may not have been
+         * initialized yet. JFXPanel initializes the JavaFX toolkit and is
+         * compatible with older JavaFX versions where Platform.startup(...)
+         * is not available.
          */
         try {
+            new JFXPanel();
+
             javafx.application.Platform.runLater(() -> {
                 try {
                     javafx.stage.Stage stage =
                             new javafx.stage.Stage();
 
-                    stage.setOnCloseRequest(event -> {
-                        // Keep the Swing login closed after successful login.
-                    });
-
                     new AdminDashboard().start(stage);
+
                     stage.toFront();
                     stage.requestFocus();
 
@@ -354,11 +356,14 @@ public class AdminLogin extends JFrame {
                     );
                 }
             });
-        } catch (IllegalStateException ex) {
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+
             JOptionPane.showMessageDialog(
                     this,
-                    "The JavaFX dashboard is not available. "
-                            + "Please restart the application.",
+                    "Unable to start the Admin Dashboard:\n"
+                            + ex.getMessage(),
                     "Admin Login",
                     JOptionPane.ERROR_MESSAGE
             );

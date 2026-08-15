@@ -1,5 +1,10 @@
 package student;
 
+import authentication.StudentSession;
+import data.AppData;
+import model.Route;
+import model.Student;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -14,10 +19,15 @@ public class MyProfilePanel extends JPanel {
     private final Color COLOR_TEXT_MUTED = new Color(100, 116, 139);
     private final Color COLOR_BORDER = new Color(226, 232, 240);
 
+    private JTextField txtStudentId;
+    private JTextField txtFullName;
+    private JTextField txtDepartment;
+    private JComboBox<String> cbRoute;
+
     public MyProfilePanel() {
-        setLayout(new BorderLayout(15, 15));
+        setLayout(new BorderLayout(18, 18));
         setBackground(COLOR_BG);
-        setBorder(new EmptyBorder(20, 25, 20, 25));
+        setBorder(new EmptyBorder(22, 26, 22, 26));
 
         // ================= 1. TOP HEADER =================
         JPanel topHeader = new JPanel();
@@ -25,7 +35,7 @@ public class MyProfilePanel extends JPanel {
         topHeader.setOpaque(false);
 
         JLabel lblTitle = new JLabel("My Profile");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setForeground(COLOR_TEXT_DARK);
 
         JLabel lblSubTitle = new JLabel("View and update your profile information");
@@ -39,18 +49,18 @@ public class MyProfilePanel extends JPanel {
         add(topHeader, BorderLayout.NORTH);
 
         // ================= 2. MAIN CARD CONTAINER =================
-        JPanel cardContainer = new JPanel(new BorderLayout(25, 0));
+        JPanel cardContainer = new JPanel(new BorderLayout(30, 0));
         cardContainer.setBackground(Color.WHITE);
         cardContainer.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(COLOR_BORDER, 1, true),
-                new EmptyBorder(25, 25, 25, 25)
+                new EmptyBorder(28, 28, 28, 28)
         ));
 
         // ----- LEFT COLUMN: PROFILE AVATAR ICON -----
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
         leftPanel.setOpaque(false);
-        leftPanel.setPreferredSize(new Dimension(160, 0));
+        leftPanel.setPreferredSize(new Dimension(175, 0));
 
         // Circular Profile Avatar with Icon
         JPanel avatarPanel = createAvatarPanel();
@@ -66,19 +76,22 @@ public class MyProfilePanel extends JPanel {
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(6, 10, 6, 10);
+        gbc.insets = new Insets(7, 10, 7, 10);
 
         // Form Fields
-        addFormField(formPanel, gbc, 0, "Student ID", new JTextField("20210115"));
-        addFormField(formPanel, gbc, 1, "Full Name", new JTextField("Ahmed Rahman"));
+        txtStudentId = new JTextField(getCurrentStudentId());
+        addFormField(formPanel, gbc, 0, "Student ID", txtStudentId);
+        txtFullName = new JTextField(getCurrentStudentName());
+        addFormField(formPanel, gbc, 1, "Full Name", txtFullName);
         addFormField(formPanel, gbc, 2, "Email", new JTextField("ahmed.rahman@iub.edu.bd"));
         addFormField(formPanel, gbc, 3, "Phone Number", new JTextField("017XXXXXXXX"));
-        addFormField(formPanel, gbc, 4, "Department", new JTextField("Computer Science & Engineering"));
+        txtDepartment = new JTextField(getCurrentStudentDepartment());
+        addFormField(formPanel, gbc, 4, "Department", txtDepartment);
         addFormField(formPanel, gbc, 5, "Batch / Year", new JTextField("2021"));
         addFormField(formPanel, gbc, 6, "Emergency Contact", new JTextField("018XXXXXXXX (Father)"));
 
         // Preferred Route Dropdown
-        JComboBox<String> cbRoute = new JComboBox<>(new String[]{
+        cbRoute = new JComboBox<>(new String[]{
                 "Mirpur 10 to University",
                 "Dhanmondi to University",
                 "Uttara to University",
@@ -86,6 +99,7 @@ public class MyProfilePanel extends JPanel {
                 "ECB Chattar to University"
         });
         cbRoute.setBackground(Color.WHITE);
+        selectCurrentRoute();
         addFormField(formPanel, gbc, 7, "Preferred Route", cbRoute);
 
         // Preferred Pick-up Dropdown
@@ -101,7 +115,7 @@ public class MyProfilePanel extends JPanel {
         // Update Profile Button
         gbc.gridx = 1;
         gbc.gridy = 9;
-        gbc.insets = new Insets(18, 10, 0, 10);
+        gbc.insets = new Insets(20, 10, 0, 10);
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.EAST;
 
@@ -113,18 +127,118 @@ public class MyProfilePanel extends JPanel {
         btnUpdate.setContentAreaFilled(false);
         btnUpdate.setOpaque(true);
         btnUpdate.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnUpdate.setPreferredSize(new Dimension(150, 38));
+        btnUpdate.setPreferredSize(new Dimension(155, 40));
         btnUpdate.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
 
-        btnUpdate.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "Profile updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE)
-        );
+        btnUpdate.addActionListener(e -> updateCurrentStudent());
 
         formPanel.add(btnUpdate, gbc);
 
         cardContainer.add(formPanel, BorderLayout.CENTER);
 
         add(cardContainer, BorderLayout.CENTER);
+    }
+
+    private Student getCurrentStudent() {
+        return StudentSession.getCurrentStudent();
+    }
+
+    private String getCurrentStudentId() {
+        Student student = getCurrentStudent();
+        return student != null && student.getStudentId() != null
+                ? student.getStudentId()
+                : "";
+    }
+
+    private String getCurrentStudentName() {
+        Student student = getCurrentStudent();
+        return student != null && student.getName() != null
+                ? student.getName()
+                : "";
+    }
+
+    private String getCurrentStudentDepartment() {
+        Student student = getCurrentStudent();
+        return student != null && student.getDepartment() != null
+                ? student.getDepartment()
+                : "";
+    }
+
+    private void selectCurrentRoute() {
+        Student student = getCurrentStudent();
+        if (student == null || student.getRoute() == null) {
+            return;
+        }
+
+        String routeName = student.getRoute().getRouteName();
+        for (int i = 0; i < cbRoute.getItemCount(); i++) {
+            String item = cbRoute.getItemAt(i);
+            if (item.toLowerCase().startsWith(routeName.toLowerCase())) {
+                cbRoute.setSelectedIndex(i);
+                return;
+            }
+        }
+    }
+
+    private Route getSelectedRoute() {
+        Object selected = cbRoute.getSelectedItem();
+        if (selected == null) {
+            return null;
+        }
+
+        String displayName = selected.toString();
+        String routeName = displayName;
+
+        int separator = displayName.indexOf(" to ");
+        if (separator > 0) {
+            routeName = displayName.substring(0, separator).trim();
+        }
+
+        return AppData.getTransportData().findRoute(routeName);
+    }
+
+    private void updateCurrentStudent() {
+        Student student = getCurrentStudent();
+
+        if (student == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No student is currently logged in.",
+                    "Profile",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        String studentId = txtStudentId.getText().trim();
+        String name = txtFullName.getText().trim();
+        String department = txtDepartment.getText().trim();
+        Route route = getSelectedRoute();
+
+        if (studentId.isEmpty() || name.isEmpty() || department.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Student ID, Full Name, and Department cannot be empty.",
+                    "Profile",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        student.setStudentId(studentId);
+        student.setName(name);
+        student.setDepartment(department);
+
+        if (route != null) {
+            student.setRoute(route);
+        }
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Profile updated successfully!",
+                "Success",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     // Helper: Add Form Label and Input Component
@@ -140,7 +254,7 @@ public class MyProfilePanel extends JPanel {
         gbc.gridx = 1;
         gbc.weightx = 0.65;
         inputComponent.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        inputComponent.setPreferredSize(new Dimension(0, 32));
+        inputComponent.setPreferredSize(new Dimension(0, 38));
 
         if (inputComponent instanceof JTextField) {
             JTextField tf = (JTextField) inputComponent;
@@ -200,8 +314,8 @@ public class MyProfilePanel extends JPanel {
                 g2.dispose();
             }
         };
-        p.setPreferredSize(new Dimension(120, 120));
-        p.setMaximumSize(new Dimension(120, 120));
+        p.setPreferredSize(new Dimension(130, 130));
+        p.setMaximumSize(new Dimension(130, 130));
         p.setOpaque(false);
         return p;
     }

@@ -1,5 +1,7 @@
 package student;
 
+import authentication.StudentSession;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -15,7 +17,7 @@ public class SidebarPanel extends JPanel {
 
     public SidebarPanel(StudentMainFrame frame) {
         this.mainFrame = frame;
-        setPreferredSize(new Dimension(220, 0));
+        setPreferredSize(new Dimension(230, 0));
         setBackground(COLOR_SIDEBAR);
         setLayout(new BorderLayout());
 
@@ -23,9 +25,9 @@ public class SidebarPanel extends JPanel {
         JPanel logoPanel = new JPanel();
         logoPanel.setOpaque(false);
         logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.Y_AXIS));
-        logoPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
+        logoPanel.setBorder(BorderFactory.createEmptyBorder(22, 12, 20, 12));
 
-        JLabel logoLabel = createScaledLabel("/images/logo.png", 60, 60);
+        JLabel logoLabel = createScaledLabel("/images/logo.png", 64, 64);
         if (logoLabel != null) {
             logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             logoPanel.add(logoLabel);
@@ -50,7 +52,7 @@ public class SidebarPanel extends JPanel {
         JPanel menuPanel = new JPanel();
         menuPanel.setOpaque(false);
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
-        menuPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        menuPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
         JButton btnDash = createNavButton("Dashboard", "Dashboard", "/images/ic_dashboard.png");
         JButton btnBook = createNavButton("Book Seat", "BookSeat", "/images/ic_book.png");
@@ -60,11 +62,11 @@ public class SidebarPanel extends JPanel {
         setActiveButton(btnDash);
 
         menuPanel.add(btnDash);
-        menuPanel.add(Box.createVerticalStrut(10));
+        menuPanel.add(Box.createVerticalStrut(12));
         menuPanel.add(btnBook);
-        menuPanel.add(Box.createVerticalStrut(10));
+        menuPanel.add(Box.createVerticalStrut(12));
         menuPanel.add(btnHistory);
-        menuPanel.add(Box.createVerticalStrut(10));
+        menuPanel.add(Box.createVerticalStrut(12));
         menuPanel.add(btnProfile);
 
         menuPanel.add(Box.createVerticalGlue());
@@ -76,7 +78,7 @@ public class SidebarPanel extends JPanel {
         add(menuPanel, BorderLayout.CENTER);
 
         // --- 3. Bottom Bus Banner ---
-        JLabel busGraphic = createScaledLabel("/images/bus_sidebar.png", 190, 80);
+        JLabel busGraphic = createScaledLabel("/images/bus_sidebar.png", 198, 84);
         if (busGraphic != null) {
             JPanel busPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
             busPanel.setOpaque(false);
@@ -88,29 +90,34 @@ public class SidebarPanel extends JPanel {
 
     private JButton createNavButton(String text, String screenKey, String iconPath) {
         JButton btn = new JButton(text);
-        btn.setMaximumSize(new Dimension(200, 40));
-        btn.setPreferredSize(new Dimension(200, 40));
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setMaximumSize(new Dimension(206, 44));
+        btn.setPreferredSize(new Dimension(206, 44));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
         
         btn.setContentAreaFilled(false);
         btn.setOpaque(true);
         btn.setBackground(COLOR_SIDEBAR);
         btn.setForeground(COLOR_TEXT_UNSELECTED);
         btn.setFocusPainted(false);
-        btn.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 5));
+        btn.setBorder(BorderFactory.createEmptyBorder(6, 16, 6, 8));
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         ImageIcon icon = loadScaledIcon(iconPath, 18, 18);
         if (icon != null) {
             btn.setIcon(icon);
-            btn.setIconTextGap(12);
+            btn.setIconTextGap(14);
         }
 
         btn.addActionListener(e -> {
             if ("Logout".equals(screenKey)) {
                 int res = JOptionPane.showConfirmDialog(mainFrame, "Are you sure you want to logout?", "Logout", JOptionPane.YES_NO_OPTION);
-                if (res == JOptionPane.YES_OPTION) System.exit(0);
+                if (res == JOptionPane.YES_OPTION) {
+                    StudentSession.clear();
+
+                    new authentication.LoginFrame().setVisible(true);
+                    mainFrame.dispose();
+                }
             } else {
                 setActiveButton(btn);
                 mainFrame.showScreen(screenKey);

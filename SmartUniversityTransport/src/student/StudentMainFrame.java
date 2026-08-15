@@ -10,9 +10,11 @@ public class StudentMainFrame extends JFrame {
 
     public StudentMainFrame() {
         setTitle("Smart University Transport System");
-        setSize(1100, 700);
+        setSize(1180, 760);
+        setMinimumSize(new Dimension(900, 600));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        getContentPane().setBackground(new Color(244, 246, 251));
         setLayout(new BorderLayout());
 
         // Sidebar

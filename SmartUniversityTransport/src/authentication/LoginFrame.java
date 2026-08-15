@@ -1,5 +1,10 @@
 package authentication;
 
+import data.AppData;
+import data.TransportData;
+import model.Route;
+import model.Student;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -239,9 +244,28 @@ public class LoginFrame extends JFrame {
             return;
         }
 
+        // Create/store the current student in the shared application session.
+        // For now the project has no credential database, so the entered
+        // username is used as the student's name for frontend integration.
+        TransportData data = AppData.getTransportData();
+        Route route = data.getRoutes().isEmpty() ? null : data.getRoutes().get(0);
+
+        Student student = new Student(
+                username,
+                username,
+                "Computer Science & Engineering",
+                route
+        );
+
+        StudentSession.setCurrentStudent(student);
+        data.addStudent(student);
+
         JOptionPane.showMessageDialog(this,
                 "Login successful!",
                 "Login", JOptionPane.INFORMATION_MESSAGE);
+
+        new student.StudentMainFrame().setVisible(true);
+        dispose();
     }
 
     private static class ImageLabel extends JLabel {

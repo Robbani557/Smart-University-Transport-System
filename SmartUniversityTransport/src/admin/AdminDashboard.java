@@ -13,6 +13,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javax.swing.SwingUtilities;
 
 public class AdminDashboard extends Application {
 
@@ -308,6 +309,10 @@ public class AdminDashboard extends Application {
 
             if (alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES) {
                 stage.close();
+
+                SwingUtilities.invokeLater(() ->
+                        new authentication.RoleSelectionFrame().setVisible(true)
+                );
             }
         });
 
